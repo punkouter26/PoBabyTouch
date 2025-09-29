@@ -7,9 +7,14 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Serilog;
 using System.IO;
 using Microsoft.ApplicationInsights.Extensibility;
-using Serilog.Sinks.ApplicationInsights.TelemetryConverters; // Add this back
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog from appsettings.json
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration.ReadFrom.Configuration(context.Configuration);
+});
 
 // Load optional secrets file for development (if it exists)
 // This allows developers to store secrets in appsettings.secrets.json without committing them
@@ -19,15 +24,6 @@ if (File.Exists(secretsPath))
     builder.Configuration.AddJsonFile("appsettings.secrets.json", optional: true, reloadOnChange: true);
     Log.Information("Loaded secrets from appsettings.secrets.json");
 }
-
-// Configure Serilog for verbose logging in development
-var logPath = Path.Combine(AppContext.BaseDirectory, "log.txt");
-
-builder.Host.UseSerilog((context, services, loggerConfiguration) => loggerConfiguration
-    .MinimumLevel.Debug()
-    .WriteTo.Console()
-    .WriteTo.File(logPath, rollingInterval: RollingInterval.Day, shared: true, flushToDiskInterval: TimeSpan.FromSeconds(1))
-    .WriteTo.ApplicationInsights(services.GetRequiredService<TelemetryConfiguration>(), TelemetryConverter.Traces));
 
 builder.Services.AddApplicationInsightsTelemetry(options =>
 {
@@ -39,15 +35,7 @@ builder.Services.AddApplicationInsightsTelemetry(options =>
 builder.Services.AddOpenApi();
 
 // Add Swagger services
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    {
-        Title = "PoBabyTouchGc API",
-        Version = "v1",
-        Description = "API for PoBabyTouchGc - Baby Touch Game"
-    });
-});
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
 
@@ -67,15 +55,15 @@ Log.Information("Using {StorageType} for Azure Table Storage",
 // Enhanced logging for production connection string debugging
 if (!builder.Environment.IsDevelopment())
 {
-    Log.Information("Production connection string source: {Source}", 
+    Log.Information("Production connection string source: {Source}",
         builder.Configuration.GetConnectionString("AzureTableStorage") != null ? "Configuration" :
         Environment.GetEnvironmentVariable("AzureTableStorage") != null ? "AzureTableStorage env var" :
         Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AzureTableStorage") != null ? "CUSTOMCONNSTR_AzureTableStorage env var" :
         Environment.GetEnvironmentVariable("SQLAZURECONNSTR_AzureTableStorage") != null ? "SQLAZURECONNSTR_AzureTableStorage env var" :
         "Fallback to Azurite");
-    
+
     // Log connection string format (without exposing secrets)
-    Log.Information("Connection string format: {Format}", 
+    Log.Information("Connection string format: {Format}",
         storageConnectionString.StartsWith("DefaultEndpointsProtocol=https") ? "Azure Storage Account" :
         storageConnectionString.StartsWith("UseDevelopmentStorage=true") ? "Azurite Local" :
         "Unknown");
@@ -89,7 +77,7 @@ builder.Services.AddSingleton<TableServiceClient>(implementationFactory =>
     {
         Log.Information("Initializing Azure TableServiceClient for high scores");
         var tableServiceClient = new TableServiceClient(storageConnectionString);
-        
+
         // Test connection by attempting to get service properties
         try
         {
@@ -101,7 +89,7 @@ builder.Services.AddSingleton<TableServiceClient>(implementationFactory =>
             Log.Error(testEx, "TableServiceClient connection test failed");
             throw;
         }
-        
+
         // Ensure the high scores table exists
         var tableClient = tableServiceClient.GetTableClient("PoBabyTouchGcHighScores");
         tableClient.CreateIfNotExists();
@@ -110,7 +98,7 @@ builder.Services.AddSingleton<TableServiceClient>(implementationFactory =>
     }
     catch (Exception ex)
     {
-        Log.Error(ex, "Failed to initialize TableServiceClient. Connection string format: {Format}", 
+        Log.Error(ex, "Failed to initialize TableServiceClient. Connection string format: {Format}",
             storageConnectionString.StartsWith("DefaultEndpointsProtocol=https") ? "Azure Storage Account" :
             storageConnectionString.StartsWith("UseDevelopmentStorage=true") ? "Azurite Local" :
             "Unknown");

@@ -1,4 +1,6 @@
 classDiagram
+    %% Domain Entity Class Diagram for PoBabyTouchGc
+    
     class ITableEntity {
         <<interface>>
         +string PartitionKey
@@ -12,29 +14,89 @@ classDiagram
         +int Score
         +string GameMode
         +DateTime ScoreDate
+        +string PartitionKey
+        +string RowKey
+        +DateTimeOffset? Timestamp
+        +ETag ETag
+        +HighScore()
         +HighScore(gameMode, playerInitials, score)
     }
 
-    class ScoreEntity {
-        +string PartitionKey
-        +string RowKey
-        +string Initials
+    class SaveHighScoreRequest {
+        +string PlayerInitials
         +int Score
-        +DateTimeOffset? Timestamp
-        +ETag ETag
+        +string GameMode
     }
 
-    class LeaderboardEntry {
-        +int Rank
-        +string Initials
-        +int Score
-        +DateTime Date
+    class ApiResponse~T~ {
+        +bool Success
+        +string Message
+        +T Data
+        +string ErrorCode
+        +DateTime Timestamp
+        +SuccessResult(data, message) ApiResponse~T~
+        +ErrorResult(message, errorCode) ApiResponse~T~
     }
 
-    class ScoreSubmission {
-        +string Initials
-        +int Score
+    class ClientLogRequest {
+        +string Level
+        +string Message
+        +string Category
+        +Dictionary~string,object~ Properties
     }
 
-    ITableEntity <|-- HighScore
-    ITableEntity <|-- ScoreEntity
+    class GameCircle {
+        +Guid Id
+        +float X
+        +float Y
+        +int Radius
+        +float VelocityX
+        +float VelocityY
+        +bool IsVisible
+        +bool IsHit
+        +string Person
+        +string PersonClass
+    }
+
+    class GameStateService {
+        +int CurrentScore
+        +bool IsGameActive
+        +bool IsGameOver
+        +event Action OnChange
+        +StartGame() void
+        +EndGame() void
+        +AddScore(points) void
+        +ResetGame() void
+    }
+
+    class ValidationResult {
+        +bool IsValid
+        +List~string~ Errors
+        +ValidationResult(isValid)
+        +AddError(error) void
+    }
+
+    %% Relationships
+    HighScore ..|> ITableEntity : implements
+    SaveHighScoreRequest ..> HighScore : maps to
+    ApiResponse ..> HighScore : contains
+    ApiResponse ..> SaveHighScoreRequest : contains
+    GameStateService ..> GameCircle : manages
+    ValidationResult ..> SaveHighScoreRequest : validates
+    ClientLogRequest ..> ApiResponse : logs
+
+    %% Styling
+    classDef entityStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef serviceStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef requestStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef gameStyle fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef interfaceStyle fill:#fafafa,stroke:#616161,stroke-width:2px
+
+    class HighScore entityStyle
+    class SaveHighScoreRequest requestStyle
+    class ApiResponse requestStyle
+    class ClientLogRequest requestStyle
+    class GameStateService serviceStyle
+    class ValidationResult serviceStyle
+    class GameCircle gameStyle
+    class ITableEntity interfaceStyle

@@ -1,3 +1,75 @@
 sequenceDiagram
-    Alice->>Bob: Hello Bob, how are you?
-    Bob-->>Alice: I am good thanks!
+    %% API Call Sequence Diagram for High Score Submission
+    
+    participant U as User/Browser
+    participant G as Game.razor
+    participant GS as GameStateService
+    participant HC as HttpClient
+    participant API as HighScoresController
+    participant HS as HighScoreService
+    participant HV as ValidationService
+    participant HR as HighScoreRepository
+    participant ATS as Azure Table Storage
+    participant AI as Application Insights
+    
+    %% Game Completion Flow
+    U->>G: Click circle (final one)
+    G->>GS: AddScore(1)
+    GS->>G: OnChange event
+    G->>G: timeRemaining = 0
+    G->>GS: EndGame()
+    GS->>G: OnChange event (IsGameOver = true)
+    
+    %% High Score Check Flow
+    G->>HC: GET /api/highscores/check/{score}
+    HC->>API: IsHighScore(score, gameMode)
+    API->>HS: IsHighScoreAsync(score, gameMode)
+    HS->>HR: IsHighScoreAsync(score, gameMode)
+    HR->>ATS: Query top 10 scores
+    ATS-->>HR: Return score list
+    HR-->>HS: Return boolean result
+    HS->>AI: Log performance metrics
+    HS-->>API: Return boolean
+    API-->>HC: ApiResponse<bool>
+    HC-->>G: Response data
+    
+    alt Score is High Score
+        G->>G: showHighScoreModal = true
+        U->>G: Enter initials (3 letters)
+        G->>G: Validate initials format
+        U->>G: Click Submit
+        
+        %% High Score Submission Flow
+        G->>HC: POST /api/highscores (SaveHighScoreRequest)
+        HC->>API: SaveHighScore(request)
+        API->>HS: SaveHighScoreAsync(initials, score, gameMode)
+        HS->>HV: ValidateHighScore(request)
+        HV-->>HS: ValidationResult
+        
+        alt Validation Successful
+            HS->>HR: SaveHighScoreAsync(highScore)
+            HR->>ATS: InsertEntityAsync(highScore)
+            ATS-->>HR: Success response
+            HR-->>HS: Return true
+            HS->>AI: Log successful save
+            HS-->>API: Return true
+            API-->>HC: ApiResponse<object> (Success)
+            HC-->>G: Success response
+            G->>G: showSuccessAnimation = true
+            G->>U: Navigate to leaderboard
+        else Validation Failed
+            HV-->>HS: ValidationResult (errors)
+            HS->>AI: Log validation errors
+            HS-->>API: Return false
+            API-->>HC: ApiResponse<object> (Error)
+            HC-->>G: Error response
+            G->>U: Show error message
+        end
+    else Score is Not High Score
+        G->>U: Show "Play Again" option
+    end
+    
+    %% Telemetry Throughout
+    Note over G,AI: All user interactions logged via ClientLogRequest
+    Note over API,AI: All API calls tracked with performance metrics
+    Note over ATS,AI: Storage operations monitored for latency

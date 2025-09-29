@@ -15,6 +15,13 @@ azure_credentials.json
 secrets.json
 appsettings.secrets.json
 
+# Debug and logging files (local development only)
+DEBUG/
+log.txt
+*.log
+server_log.txt
+client_log.txt
+
 # Azurite storage emulator files
 __azurite_db_*.json
 __blobstorage__/

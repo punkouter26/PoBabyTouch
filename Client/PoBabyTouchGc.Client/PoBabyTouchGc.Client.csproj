@@ -4,23 +4,13 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- Build optimization for CI/CD -->
-    <RestoreLockedMode>false</RestoreLockedMode>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <!-- Reduce build parallelism to avoid file locking issues -->
-    <BuildInParallel>false</BuildInParallel>
-    <!-- Static web assets configuration -->
     <CompressionEnabled>true</CompressionEnabled>
-    <!-- Blazor WebAssembly specific optimizations -->
-    <BlazorWebAssemblyLoadBootResource>false</BlazorWebAssemblyLoadBootResource>
-    <WasmStripILAfterAOT>true</WasmStripILAfterAOT>
-    <!-- Reduce memory usage during build -->
-    <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.7" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.7" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.9" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
   </ItemGroup>
 
   <ItemGroup>

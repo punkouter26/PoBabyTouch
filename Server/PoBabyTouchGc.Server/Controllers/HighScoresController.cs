@@ -31,16 +31,29 @@ namespace PoBabyTouchGc.Server.Controllers
             [FromQuery] int count = 10,
             [FromQuery] string gameMode = "Default")
         {
+            var startTime = DateTime.UtcNow;
             try
             {
                 _logger.LogDebug("Getting top {Count} scores for {GameMode} mode", count, gameMode);
 
+                // Telemetry: Track API usage
+                _logger.LogInformation("API Request: GetTopScores - Count: {Count}, GameMode: {GameMode}, UserAgent: {UserAgent}", 
+                    count, gameMode, Request.Headers["User-Agent"].ToString());
+
                 var scores = await _highScoreService.GetTopScoresAsync(count, gameMode);
+                
+                // Telemetry: Track performance and results
+                var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+                _logger.LogInformation("API Performance: GetTopScores completed in {Duration}ms, returned {ScoreCount} scores", 
+                    duration, scores.Count);
+
                 return Ok(ApiResponse<List<HighScore>>.SuccessResult(scores));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get top scores");
+                var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+                _logger.LogError(ex, "API Error: GetTopScores failed after {Duration}ms for GameMode: {GameMode}", 
+                    duration, gameMode);
                 return StatusCode(500, ApiResponse<List<HighScore>>.ErrorResult("Failed to retrieve top scores"));
             }
         }
@@ -51,16 +64,25 @@ namespace PoBabyTouchGc.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<object>>> SaveHighScore([FromBody] SaveHighScoreRequest request)
         {
+            var startTime = DateTime.UtcNow;
             try
             {
                 _logger.LogDebug("Saving high score: {PlayerInitials} - {Score} points",
                     request.PlayerInitials, request.Score);
+
+                // Telemetry: Track high score submission attempts
+                _logger.LogInformation("HighScore Submission: Player: {PlayerInitials}, Score: {Score}, GameMode: {GameMode}, UserAgent: {UserAgent}", 
+                    request.PlayerInitials, request.Score, request.GameMode, Request.Headers["User-Agent"].ToString());
 
                 // Use validation service instead of inline validation
                 var validationResult = _validationService.ValidateHighScore(request);
 
                 if (!validationResult.IsValid)
                 {
+                    // Telemetry: Track validation failures
+                    _logger.LogWarning("HighScore Validation Failed: Player: {PlayerInitials}, Score: {Score}, Error: {ValidationError}", 
+                        request.PlayerInitials, request.Score, validationResult.ErrorMessage);
+                    
                     var validationResponse = ApiResponse<object>.ErrorResult(validationResult.ErrorMessage ?? "Validation Error");
                     return BadRequest(validationResponse);
                 }
@@ -70,17 +92,23 @@ namespace PoBabyTouchGc.Server.Controllers
                     request.Score,
                     request.GameMode ?? "Default");
 
+                var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+
                 if (success)
                 {
-                    _logger.LogInformation("High score saved successfully: {PlayerInitials} - {Score} points",
-                        request.PlayerInitials, request.Score);
+                    // Telemetry: Track successful high score saves
+                    _logger.LogInformation("HighScore Success: Player: {PlayerInitials}, Score: {Score}, GameMode: {GameMode}, Duration: {Duration}ms", 
+                        request.PlayerInitials, request.Score, request.GameMode, duration);
+                    
                     var response = ApiResponse<object>.SuccessResult(new { message = "High score saved successfully" }, "High score saved successfully");
                     return Ok(response);
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to save high score: {PlayerInitials} - {Score} points",
-                        request.PlayerInitials, request.Score);
+                    // Telemetry: Track failed saves
+                    _logger.LogError("HighScore Save Failed: Player: {PlayerInitials}, Score: {Score}, GameMode: {GameMode}, Duration: {Duration}ms", 
+                        request.PlayerInitials, request.Score, request.GameMode, duration);
+                    
                     var response = ApiResponse<object>.ErrorResult("Failed to save high score");
                     return StatusCode(500, response);
                 }
@@ -181,7 +209,8 @@ namespace PoBabyTouchGc.Server.Controllers
                 try
                 {
                     await _highScoreService.GetTopScoresAsync(1, "Default");
-                    diagnosticInfo = diagnosticInfo with { 
+                    diagnosticInfo = diagnosticInfo with
+                    {
                         connectionTest = "success",
                         tableTest = "success",
                         serviceTest = "success"
@@ -190,7 +219,8 @@ namespace PoBabyTouchGc.Server.Controllers
                 catch (Exception serviceEx)
                 {
                     _logger.LogError(serviceEx, "High score service diagnostic test failed");
-                    diagnosticInfo = diagnosticInfo with { 
+                    diagnosticInfo = diagnosticInfo with
+                    {
                         connectionTest = "failed",
                         tableTest = "failed",
                         serviceTest = $"failed: {serviceEx.Message}"

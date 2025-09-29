@@ -1,9 +1,53 @@
 erDiagram
-    HIGHSCORE {
-        string PartitionKey PK
-        string RowKey PK
-        string PlayerInitials
-        int Score
-        string GameMode
-        datetime ScoreDate
+    %% Azure Table Storage Entity Relationship Diagram
+    
+    HighScore {
+        string PartitionKey PK "GameMode (Default, Easy, Hard, Expert)"
+        string RowKey PK "Negative_Score + Timestamp + GUID"
+        string PlayerInitials "3-letter player identification"
+        int Score "Points earned (0-999999)"
+        string GameMode "Difficulty level"
+        datetime ScoreDate "UTC timestamp of achievement"
+        datetime Timestamp "Azure Table Storage timestamp"
+        string ETag "Azure Table Storage concurrency control"
     }
+    
+    GameMode {
+        string Name PK "Default, Easy, Hard, Expert"
+        string Description "Difficulty description"
+        int MaxScores "Maximum scores per mode (10)"
+        bool IsActive "Whether mode is available"
+    }
+    
+    ApplicationInsights {
+        string OperationId PK "Unique operation identifier"
+        string EventType "GameSession, UserInteraction, PerformanceMetric"
+        datetime Timestamp "Event occurrence time"
+        string UserId "Anonymous user identifier"
+        string SessionId "Game session identifier"
+        json Properties "Structured telemetry data"
+        string Level "Debug, Info, Warning, Error"
+    }
+    
+    ClientLog {
+        string LogId PK "Client-generated log identifier"
+        string Level "Debug, Info, Warning, Error"
+        string Message "Log message content"
+        string Category "UserInteraction, GamePerformance, Error"
+        datetime ClientTimestamp "Browser timestamp"
+        json Properties "Additional structured data"
+        string UserAgent "Browser information"
+        string SessionId "Game session correlation"
+    }
+    
+    %% Relationships
+    HighScore ||--o{ GameMode : "partitioned_by"
+    HighScore ||--o{ ApplicationInsights : "triggers_telemetry"
+    ClientLog ||--o{ ApplicationInsights : "ingested_into"
+    GameMode ||--o{ ApplicationInsights : "mode_analytics"
+    
+    %% Business Rules (Comments)
+    HighScore ||--|| "Top 10 per GameMode" : business_rule
+    HighScore ||--|| "Negative score in RowKey for DESC sort" : technical_rule
+    ApplicationInsights ||--|| "Retention: 90 days" : data_policy
+    ClientLog ||--|| "Real-time ingestion via API" : integration

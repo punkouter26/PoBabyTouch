@@ -66,7 +66,7 @@ namespace PoBabyTouchGc.Server.Middleware
                 case Azure.RequestFailedException azureEx:
                     statusCode = HttpStatusCode.InternalServerError;
                     response = ApiResponse.CreateError($"Azure Table Storage error: {azureEx.Message}");
-                    _logger.LogError(azureEx, "Azure Table Storage error: Status={Status}, ErrorCode={ErrorCode}", 
+                    _logger.LogError(azureEx, "Azure Table Storage error: Status={Status}, ErrorCode={ErrorCode}",
                         azureEx.Status, azureEx.ErrorCode);
                     break;
 

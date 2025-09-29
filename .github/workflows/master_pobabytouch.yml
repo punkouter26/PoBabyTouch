@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - PoBabyTouch
+name: Build and deploy ASP.Net Core app to Azure Web App - PoBabyTouchGc
 
 on:
   push:
@@ -66,7 +66,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'PoBabyTouch'
+          app-name: 'PoBabyTouchGc'
           slot-name: 'Production'
           package: .
           
@@ -74,5 +74,5 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az webapp config appsettings set --name PoBabyTouch --resource-group pobabytouch --settings "ConnectionStrings:AzureTableStorage=DefaultEndpointsProtocol=https;AccountName=posharedtablestorage;AccountKey=${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }};EndpointSuffix=core.windows.net"
+            az webapp config appsettings set --name PoBabyTouchGc --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --settings "ConnectionStrings__AzureTableStorage=DefaultEndpointsProtocol=https;AccountName=${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }};AccountKey=${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }};EndpointSuffix=core.windows.net"
           

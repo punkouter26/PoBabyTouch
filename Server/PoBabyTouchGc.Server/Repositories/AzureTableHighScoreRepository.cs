@@ -21,53 +21,53 @@ namespace PoBabyTouchGc.Server.Repositories
             _tableClient.CreateIfNotExists(); // Ensure the table is created
         }
 
-    public async Task<bool> SaveHighScoreAsync(HighScore highScore)
-    {
-        try
+        public async Task<bool> SaveHighScoreAsync(HighScore highScore)
         {
-            // Ensure proper initialization
-            if (string.IsNullOrEmpty(highScore.PartitionKey))
-            {
-                highScore.PartitionKey = highScore.GameMode;
-            }
-            
-            if (string.IsNullOrEmpty(highScore.RowKey))
-            {
-                // Use the constructor's logic for RowKey generation
-                highScore.RowKey = $"{(999999 - highScore.Score):D6}_{highScore.ScoreDate:yyyyMMddHHmmss}_{Guid.NewGuid():N}";
-            }
-            
-            highScore.Timestamp = DateTimeOffset.UtcNow;
-
-            await _tableClient.AddEntityAsync(highScore);
-
-            _logger.LogDebug("High score saved to Azure Table Storage: {PlayerInitials} - {Score}",
-                highScore.PlayerInitials, highScore.Score);
-            return true;
-        }
-        catch (Azure.RequestFailedException ex) when (ex.Status == 409)
-        {
-            // Handle duplicate entity conflict by updating the RowKey with more uniqueness
-            highScore.RowKey = $"{(999999 - highScore.Score):D6}_{DateTime.UtcNow:yyyyMMddHHmmssfff}_{Guid.NewGuid():N}";
             try
             {
+                // Ensure proper initialization
+                if (string.IsNullOrEmpty(highScore.PartitionKey))
+                {
+                    highScore.PartitionKey = highScore.GameMode;
+                }
+
+                if (string.IsNullOrEmpty(highScore.RowKey))
+                {
+                    // Use the constructor's logic for RowKey generation
+                    highScore.RowKey = $"{(999999 - highScore.Score):D6}_{highScore.ScoreDate:yyyyMMddHHmmss}_{Guid.NewGuid():N}";
+                }
+
+                highScore.Timestamp = DateTimeOffset.UtcNow;
+
                 await _tableClient.AddEntityAsync(highScore);
-                _logger.LogDebug("High score saved after retry: {PlayerInitials} - {Score}",
+
+                _logger.LogDebug("High score saved to Azure Table Storage: {PlayerInitials} - {Score}",
                     highScore.PlayerInitials, highScore.Score);
                 return true;
             }
-            catch (Exception retryEx)
+            catch (Azure.RequestFailedException ex) when (ex.Status == 409)
             {
-                _logger.LogError(retryEx, "Failed to save high score after retry");
+                // Handle duplicate entity conflict by updating the RowKey with more uniqueness
+                highScore.RowKey = $"{(999999 - highScore.Score):D6}_{DateTime.UtcNow:yyyyMMddHHmmssfff}_{Guid.NewGuid():N}";
+                try
+                {
+                    await _tableClient.AddEntityAsync(highScore);
+                    _logger.LogDebug("High score saved after retry: {PlayerInitials} - {Score}",
+                        highScore.PlayerInitials, highScore.Score);
+                    return true;
+                }
+                catch (Exception retryEx)
+                {
+                    _logger.LogError(retryEx, "Failed to save high score after retry");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save high score to Azure Table Storage");
                 return false;
             }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to save high score to Azure Table Storage");
-            return false;
-        }
-    }
 
         public async Task<List<HighScore>> GetTopScoresAsync(int count, string gameMode)
         {

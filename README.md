@@ -1,37 +1,113 @@
 # PoBabyTouchGc
 
-This is a simple baby touch game built with Blazor WebAssembly and .NET. The game is designed to be a fun and interactive way for babies to learn about cause and effect.
+A fun and interactive baby touch game built with Blazor WebAssembly and .NET, designed to teach babies about cause and effect through colorful character circles with physics-based movement.
 
-## Features
+## 🎮 Quick Start
 
-*   **Simple Gameplay:** The game is easy to play. Just touch the screen to make things happen.
-*   **Cute Graphics:** The game features cute and colorful graphics that are sure to capture your baby's attention.
-*   **Fun Sounds:** The game includes fun and engaging sounds that will keep your baby entertained.
+### Run Locally (Development)
+1. **Start Azurite** (Azure Storage Emulator):
+   ```powershell
+   azurite --silent --location ./AzuriteData --debug ./AzuriteData/debug.log
+   ```
 
-## Getting Started
+2. **Launch the Game**:
+   ```powershell
+   dotnet run --project Server/PoBabyTouchGc.Server
+   ```
 
-To get started, you'll need to have the following installed:
+3. **Open Browser**: Navigate to `https://localhost:7000`
 
-*   [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-*   [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) or [Visual Studio Code](https://code.visualstudio.com/)
-*   [Azurite](https://docs.microsoft.com/azure/storage/common/storage-use-azurite)
+### Run on Azure (Production)
+Visit the live deployment: **https://pobabytouch-app.azurewebsites.net**
 
-### Setup
+## 🌟 Features
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/your-username/PoBabyTouchGc.git
-    ```
-2.  Open the solution in Visual Studio or Visual Studio Code.
-3.  Start Azurite.
-4.  **Configure Azure Connection String (for production):**
-    For production deployment, set the Azure Storage connection string using:
-    ```bash
-    cd Server/PoBabyTouchGc.Server
-    dotnet user-secrets set "ConnectionStrings:AzureTableStorage" "your_azure_connection_string_here"
-    ```
-5.  Press F5 to run the application.
+- **Interactive Gameplay**: Touch moving circles featuring characters Matt, Nick, and Kim
+- **Physics Engine**: Realistic circle movement with collision detection and boundary bouncing
+- **High Score System**: Persistent leaderboards with Azure Table Storage integration
+- **Multiple Game Modes**: Default, Easy, Hard, and Expert difficulty levels
+- **Cloud Telemetry**: Real-time monitoring with Azure Application Insights
+- **Responsive Design**: Optimized for mobile, tablet, and desktop devices
+- **Real-time Diagnostics**: Built-in health monitoring for all Azure dependencies
 
-**Note:** The project uses Azurite for local development (configured in appsettings.Development.json) and requires an Azure Storage connection string for production (use user secrets or Azure App Service configuration).
+## 🏗️ Architecture
 
-The application will open in your default browser. You can now play the game.
+**Frontend**: Blazor WebAssembly (.NET 9.0) with hosted backend  
+**Backend**: ASP.NET Core Web API with Vertical Slice Architecture  
+**Storage**: Azure Table Storage (production) / Azurite (development)  
+**Monitoring**: Azure Application Insights with structured logging  
+**Patterns**: Repository, Service Layer, Strategy, and Dependency Injection
+
+## 📋 Prerequisites
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [Visual Studio Code](https://code.visualstudio.com/) (recommended)
+- [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli) (for deployment)
+- [Azurite](https://docs.microsoft.com/azure/storage/common/storage-use-azurite) (for local development)
+
+## 🛠️ Development Setup
+
+### Local Development with Azurite
+
+1. **Clone and Navigate**:
+   ```powershell
+   git clone https://github.com/your-username/PoBabyTouchGc.git
+   cd PoBabyTouchGc
+   ```
+
+2. **Start Storage Emulator**:
+   ```powershell
+   azurite --silent --location ./AzuriteData --debug ./AzuriteData/debug.log
+   ```
+
+3. **Run Application**:
+   ```powershell
+   dotnet run --project Server/PoBabyTouchGc.Server
+   ```
+
+4. **Open Browser**: Navigate to `https://localhost:7000`
+
+### Using Azure Resources
+
+Replace `appsettings.Development.json` connection strings with your Azure resources and run normally.
+
+## ☁️ Azure Deployment
+
+The game is deployed to Azure App Service with the following resources:
+- **Storage Account**: pobabytouchstorage (Table Storage for high scores)
+- **Application Insights**: PoBabyTouch-insights (telemetry and monitoring)
+- **App Service**: PoBabyTouch-app (hosted at https://pobabytouch-app.azurewebsites.net)
+
+## 🧪 Testing
+
+```powershell
+# Run all tests
+dotnet test
+
+# Run integration tests only
+dotnet test --filter "Integration"
+```
+
+All tests include Azure Table Storage integration with automatic cleanup.
+
+## 📁 Project Structure
+
+```
+PoBabyTouchGc/
+├── Client/PoBabyTouchGc.Client/          # Blazor WebAssembly UI
+├── Server/PoBabyTouchGc.Server/          # ASP.NET Core API
+├── Shared/PoBabyTouchGc.Shared/          # Shared models and contracts
+├── PoBabyTouchGc.Tests/                  # Integration and unit tests
+├── Diagram/                              # Mermaid diagrams and visuals
+└── AzuriteData/                          # Local storage emulator data
+```
+
+## 📊 Monitoring
+
+- **Health Check**: Visit `/api/health` for system status
+- **Diagnostics**: Visit `/diag` for dependency health monitoring
+- **Application Insights**: Real-time telemetry in Azure portal
+
+---
+
+*Built with ❤️ using Blazor WebAssembly and .NET 9*

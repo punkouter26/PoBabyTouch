@@ -7,6 +7,7 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject GameStateService GameStateService
+@inject ILogger<Game> Logger
 @implements IDisposable
 
 <PageTitle>PoBabyTouchGc</PageTitle>
@@ -419,9 +420,8 @@
             // Play sound effect based on person
             await JSRuntime.InvokeVoidAsync("playSound", circle.Person);
         }
-        catch (Exception ex) {
-            Console.Error.WriteLine($"Error playing sound: {ex.Message}");
-            // Continue execution even if sound playback fails
+        catch {
+            // Silent fail for sound errors
         }
         
         // Schedule circle to reappear after delay

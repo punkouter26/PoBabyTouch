@@ -1,5 +1,56 @@
 graph TD
-    PoBabyTouchGc.Shared --> PoBabyTouchGc.Client
-    PoBabyTouchGc.Shared --> PoBabyTouchGc.Server
-    PoBabyTouchGc.Client --> PoBabyTouchGc.Server
-    PoBabyTouchGc.Server --> PoBabyTouchGc.IntegrationTests
+    %% Project Dependency Diagram for PoBabyTouchGc
+    
+    subgraph "Client Layer"
+        CLIENT[PoBabyTouchGc.Client<br/>Blazor WebAssembly]
+    end
+    
+    subgraph "Server Layer"
+        SERVER[PoBabyTouchGc.Server<br/>ASP.NET Core API]
+    end
+    
+    subgraph "Shared Layer"
+        SHARED[PoBabyTouchGc.Shared<br/>Models & Contracts]
+    end
+    
+    subgraph "Testing Layer"
+        TESTS[PoBabyTouchGc.Tests<br/>Integration & Unit Tests]
+    end
+    
+    subgraph "External Dependencies"
+        AZURE_TABLES[Azure.Data.Tables]
+        AZURE_INSIGHTS[Microsoft.ApplicationInsights]
+        SERILOG[Serilog.AspNetCore]
+        XUNIT[xUnit Framework]
+        EFCORE[Entity Framework Core]
+    end
+    
+    %% Project References
+    CLIENT --> SHARED
+    SERVER --> SHARED
+    TESTS --> SERVER
+    TESTS --> CLIENT
+    TESTS --> SHARED
+    
+    %% Package Dependencies
+    SERVER --> AZURE_TABLES
+    SERVER --> AZURE_INSIGHTS
+    SERVER --> SERILOG
+    CLIENT --> SHARED
+    TESTS --> XUNIT
+    
+    %% Hosting Relationship
+    SERVER -.- CLIENT
+    
+    %% Styling
+    classDef clientStyle fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
+    classDef serverStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef sharedStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef testStyle fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef externalStyle fill:#fafafa,stroke:#616161,stroke-width:1px
+    
+    class CLIENT clientStyle
+    class SERVER serverStyle
+    class SHARED sharedStyle
+    class TESTS testStyle
+    class AZURE_TABLES,AZURE_INSIGHTS,SERILOG,XUNIT,EFCORE externalStyle

@@ -1,6 +1,67 @@
-graph TD
-    A[Start] --> B{Is it?}
-    B -- Yes --> C[OK]
-    C --> D[End]
-    B -- No --> E[Else]
-    E --> D
+flowchart TD
+    %% PoBabyTouchGc Game Use Case Flow
+    
+    START([User Opens Game]) --> HOME[Home Page Display]
+    HOME --> PLAY_CLICK{User Clicks 'Play Game'?}
+    
+    PLAY_CLICK -->|Yes| GAME_INIT[Initialize Game Area]
+    PLAY_CLICK -->|No - Leaderboard| LEADERBOARD[Show High Scores]
+    LEADERBOARD --> HOME
+    
+    GAME_INIT --> SPAWN_CIRCLES[Spawn 7 Circles<br/>Matt, Nick, Kim]
+    SPAWN_CIRCLES --> PHYSICS_START[Start Physics Engine<br/>60 FPS Movement]
+    PHYSICS_START --> TIMER_START[Start 3-Second Timer]
+    TIMER_START --> GAME_ACTIVE[Game Active State]
+    
+    GAME_ACTIVE --> USER_ACTION{User Action?}
+    
+    USER_ACTION -->|Click Circle| HIT_CIRCLE[Circle Hit<br/>+1 Score]
+    USER_ACTION -->|Miss Circle| GAME_ACTIVE
+    USER_ACTION -->|Timer Ends| GAME_END[Game Over]
+    
+    HIT_CIRCLE --> HIDE_CIRCLE[Hide Circle]
+    HIDE_CIRCLE --> UPDATE_SCORE[Update Score Display]
+    UPDATE_SCORE --> RESPAWN_CIRCLE[Respawn Circle<br/>New Position]
+    RESPAWN_CIRCLE --> CHECK_TIMER{Timer > 0?}
+    
+    CHECK_TIMER -->|Yes| GAME_ACTIVE
+    CHECK_TIMER -->|No| GAME_END
+    
+    GAME_END --> CHECK_HIGH_SCORE[API Call:<br/>Check if High Score]
+    CHECK_HIGH_SCORE --> HIGH_SCORE_RESULT{Is High Score?}
+    
+    HIGH_SCORE_RESULT -->|Yes| MODAL_SHOW[Show High Score Modal]
+    HIGH_SCORE_RESULT -->|No| GAME_OVER_DISPLAY[Show Game Over<br/>Play Again Option]
+    
+    MODAL_SHOW --> INITIALS_INPUT[Enter 3-Letter Initials]
+    INITIALS_INPUT --> VALIDATE_INPUT{Valid Initials?}
+    
+    VALIDATE_INPUT -->|Yes| SUBMIT_SCORE[API Call:<br/>Save High Score]
+    VALIDATE_INPUT -->|No| INITIALS_INPUT
+    
+    SUBMIT_SCORE --> SAVE_RESULT{Save Successful?}
+    
+    SAVE_RESULT -->|Yes| SUCCESS_ANIMATION[Show Success Animation]
+    SAVE_RESULT -->|No| ERROR_DISPLAY[Show Error Message]
+    
+    SUCCESS_ANIMATION --> REDIRECT_LEADERBOARD[Navigate to Leaderboard]
+    ERROR_DISPLAY --> MODAL_SHOW
+    
+    GAME_OVER_DISPLAY --> PLAY_AGAIN{Play Again?}
+    REDIRECT_LEADERBOARD --> END_SESSION([Session Complete])
+    
+    PLAY_AGAIN -->|Yes| GAME_INIT
+    PLAY_AGAIN -->|No| HOME
+    
+    %% Styling
+    classDef startEnd fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    classDef gameAction fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    classDef decision fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    classDef apiCall fill:#9C27B0,stroke:#6A1B9A,stroke-width:2px,color:#fff
+    classDef userInput fill:#607D8B,stroke:#37474F,stroke-width:2px,color:#fff
+    
+    class START,END_SESSION startEnd
+    class GAME_INIT,SPAWN_CIRCLES,PHYSICS_START,TIMER_START,GAME_ACTIVE,HIT_CIRCLE,HIDE_CIRCLE,UPDATE_SCORE,RESPAWN_CIRCLE gameAction
+    class PLAY_CLICK,USER_ACTION,CHECK_TIMER,HIGH_SCORE_RESULT,VALIDATE_INPUT,SAVE_RESULT,PLAY_AGAIN decision
+    class CHECK_HIGH_SCORE,SUBMIT_SCORE apiCall
+    class INITIALS_INPUT,HOME,LEADERBOARD,MODAL_SHOW,SUCCESS_ANIMATION,GAME_OVER_DISPLAY userInput
