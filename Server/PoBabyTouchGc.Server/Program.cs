@@ -25,10 +25,25 @@ if (File.Exists(secretsPath))
     Log.Information("Loaded secrets from appsettings.secrets.json");
 }
 
+// Configure Application Insights - try multiple configuration sources
+var appInsightsConnectionString = 
+    builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] ?? // Direct config
+    builder.Configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING") ?? // ConnectionStrings section
+    builder.Configuration["ApplicationInsights:ConnectionString"]; // Nested config
+
 builder.Services.AddApplicationInsightsTelemetry(options =>
 {
-    options.ConnectionString = builder.Configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING");
+    options.ConnectionString = appInsightsConnectionString;
 });
+
+if (!string.IsNullOrEmpty(appInsightsConnectionString))
+{
+    Log.Information("Application Insights configured with connection string");
+}
+else
+{
+    Log.Warning("Application Insights connection string not found");
+}
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
