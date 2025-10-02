@@ -13,10 +13,13 @@
 <PageTitle>PoBabyTouchGc</PageTitle>
 
 <div class="game-container @(GameStateService.IsGameOver ? "game-over" : "")">
-    <div class="game-header">
-        <div class="score-display">Score: @GameStateService.CurrentScore</div>
-        <div class="timer-display">Time: @timeRemaining</div>
-    </div>
+    @if (!isBabyMode)
+    {
+        <div class="game-header">
+            <div class="score-display">Score: @GameStateService.CurrentScore</div>
+            <div class="timer-display">Time: @timeRemaining</div>
+        </div>
+    }
     
     <div class="game-area" @ref="gameAreaRef" @onclick="HandleBackgroundClick" @key="gameAreaKey">
         @foreach (var circle in circles)
@@ -92,6 +95,7 @@
     private bool showSuccessAnimation = false;
     private string playerInitials = "";
     private Guid gameAreaKey = Guid.NewGuid(); // New field for forcing re-render
+    private bool isBabyMode = false; // Baby mode flag
     
     // Constants
     private const int TotalCircles = 7;
@@ -100,10 +104,15 @@
     private const int PhysicsFps = 60;
     private const float BaseSpeed = 2.0f;
     private const float SpeedIncreaseFactor = 1.0f; // Changed from 1.5f to 1.0f
+    private const float MaxSpeed = 3.0f; // Maximum velocity cap for baby mode
 
     protected override void OnInitialized()
     {
         GameStateService.OnChange += StateHasChanged;
+        
+        // Check for baby mode query parameter
+        var uri = new Uri(NavigationManager.Uri);
+        isBabyMode = uri.Query.Contains("mode=baby", StringComparison.OrdinalIgnoreCase);
     }
       protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -244,10 +253,14 @@
         physicsFpsTimer.AutoReset = true;
         physicsFpsTimer.Start();
         
-        gameTimer = new Timer(1000);
-        gameTimer.Elapsed += GameTimerTick;
-        gameTimer.AutoReset = true;
-        gameTimer.Start();
+        // Only start game timer if not in baby mode
+        if (!isBabyMode)
+        {
+            gameTimer = new Timer(1000);
+            gameTimer.Elapsed += GameTimerTick;
+            gameTimer.AutoReset = true;
+            gameTimer.Start();
+        }
 
         gameAreaKey = Guid.NewGuid(); // Force re-render of game area
     }
@@ -317,8 +330,8 @@
         InvokeAsync(() =>
         {
             // Calculate current speed multiplier based on remaining time
-            // The speed increases as time decreases
-            float speedMultiplier = 1.0f + (3 - timeRemaining) / 3.0f * (SpeedIncreaseFactor - 1.0f);
+            // The speed increases as time decreases (disabled in baby mode)
+            float speedMultiplier = isBabyMode ? 1.0f : 1.0f + (3 - timeRemaining) / 3.0f * (SpeedIncreaseFactor - 1.0f);
             
             foreach (var circle in circles.Where(c => c.IsVisible))
             {
@@ -375,7 +388,8 @@
                             continue;
                             
                         // Simple elastic collision response
-                        double bounce = 1.0; // Elastic coefficient
+                        // In baby mode, use slightly inelastic collisions to prevent speed buildup
+                        double bounce = isBabyMode ? 0.8 : 1.0; // Elastic coefficient
                         double impulse = -(1 + bounce) * velocityAlongNormal;
                         
                         // Apply impulse equally to both circles
@@ -392,6 +406,18 @@
                         otherCircle.Y += (float)(overlap * 0.5 * ny);
                     }
                 }
+                
+                // Clamp velocity to max speed in baby mode to prevent runaway acceleration
+                if (isBabyMode)
+                {
+                    float currentSpeed = (float)Math.Sqrt(circle.VelocityX * circle.VelocityX + circle.VelocityY * circle.VelocityY);
+                    if (currentSpeed > MaxSpeed)
+                    {
+                        float scale = MaxSpeed / currentSpeed;
+                        circle.VelocityX *= scale;
+                        circle.VelocityY *= scale;
+                    }
+                }
             }
             
             StateHasChanged();
@@ -406,8 +432,11 @@
         // Add a temporary class for visual feedback (e.g., a quick scale/flash)
         circle.IsHit = true;
         
-        // Increment score
-        GameStateService.AddScore(1);
+        // Increment score (only in normal mode)
+        if (!isBabyMode)
+        {
+            GameStateService.AddScore(1);
+        }
         
         // Hide the circle
         circle.IsVisible = false;

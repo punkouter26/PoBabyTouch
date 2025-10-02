@@ -18,12 +18,30 @@ namespace PoBabyTouchGc.Server.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetHealthStatus()
+        public async Task<ActionResult> GetHealthStatus()
         {
+            var dependencies = new Dictionary<string, object>();
+            var overallStatus = "Healthy";
+
+            try
+            {
+                // Check Azure Table Storage connectivity
+                var tableClient = _tableServiceClient.GetTableClient("PoBabyTouchGcHighScores");
+                await tableClient.CreateIfNotExistsAsync();
+                dependencies["tableStorage"] = new { status = "Healthy" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Azure Table Storage health check failed");
+                dependencies["tableStorage"] = new { status = "Unhealthy", error = ex.Message };
+                overallStatus = "Unhealthy";
+            }
+
             var healthStatus = new
             {
-                Status = "Healthy",
-                Timestamp = DateTime.UtcNow
+                Status = overallStatus,
+                Timestamp = DateTime.UtcNow,
+                Dependencies = dependencies
             };
 
             return Ok(healthStatus);
