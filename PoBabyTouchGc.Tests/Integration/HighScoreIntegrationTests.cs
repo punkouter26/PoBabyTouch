@@ -41,7 +41,7 @@ namespace PoBabyTouchGc.IntegrationTests
             {
                 using var scope = _factory.Services.CreateScope();
                 var tableServiceClient = scope.ServiceProvider.GetRequiredService<TableServiceClient>();
-                var tableClient = tableServiceClient.GetTableClient("PoBabyTouchGcHighScores");
+                var tableClient = tableServiceClient.GetTableClient("PoBabyTouchHighScores");
 
                 // Delete all test data for the game modes used in this test
                 foreach (var gameMode in _testGameModes)

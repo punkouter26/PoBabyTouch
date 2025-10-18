@@ -1,0 +1,42 @@
+graph TB
+    subgraph Pages["Pages"]
+        Home[Home.razor<br/>/]
+        Game[Game.razor<br/>/game]
+        HighScores[HighScores.razor<br/>/highscores]
+        Leader[Leader.razor<br/>/leader]
+        Diag[Diag.razor<br/>/diag]
+    end
+    
+    subgraph Layout["Layout"]
+        MainLayout[MainLayout.razor]
+        NavMenu[NavMenu.razor]
+    end
+    
+    subgraph Components["Shared Components"]
+        HighScoreDisplay[HighScoreDisplay.razor]
+    end
+    
+    subgraph Services["Client Services"]
+        GameState[GameStateService]
+        ServerLogger[ServerLoggerProvider]
+    end
+    
+    MainLayout --> NavMenu
+    Home -.in.-> MainLayout
+    Game -.in.-> MainLayout
+    HighScores -.in.-> MainLayout
+    Leader -.in.-> MainLayout
+    Diag -.in.-> MainLayout
+    
+    Game --> GameState
+    Game --> ServerLogger
+    
+    HighScores --> HighScoreDisplay
+    Leader --> HighScoreDisplay
+    Game --> HighScoreDisplay
+    
+    style Home fill:#4CAF50
+    style Game fill:#2196F3
+    style HighScores fill:#FF9800
+    style Leader fill:#9C27B0
+    style Diag fill:#00BCD4

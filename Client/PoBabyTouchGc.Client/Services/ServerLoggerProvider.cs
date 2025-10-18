@@ -19,7 +19,7 @@ public class ServerLoggerProvider : ILoggerProvider
     {
         _httpClient = httpClient;
         _sessionId = Guid.NewGuid().ToString();
-        
+
         // Only enable server logging in development (based on LocalDebugging setting)
         _isEnabled = configuration.GetValue<bool>("LocalDebugging:Enabled", false);
     }
@@ -75,7 +75,7 @@ public class ServerLogger : ILogger
 
         // Extract structured data from state if available
         var structuredData = new Dictionary<string, object>();
-        
+
         if (state is IEnumerable<KeyValuePair<string, object?>> properties)
         {
             foreach (var prop in properties)
@@ -117,7 +117,7 @@ public class ServerLogger : ILogger
             try
             {
                 var response = await _httpClient.PostAsJsonAsync("api/log/client", logRequest);
-                
+
                 // Optional: Log to browser console if server logging fails
                 if (!response.IsSuccessStatusCode)
                 {
@@ -148,7 +148,7 @@ public static class TelemetryLoggerExtensions
         data["Action"] = action;
         data["Element"] = element ?? "";
         data["InteractionTime"] = DateTime.UtcNow;
-        
+
         logger.LogInformation("User interaction: {Action} on {Element}", action, element);
     }
 
@@ -169,7 +169,7 @@ public static class TelemetryLoggerExtensions
         data["SessionEvent"] = sessionEvent;
         data["GameMode"] = gameMode ?? "";
         data["SessionTime"] = DateTime.UtcNow;
-        
+
         logger.LogInformation("Game session: {SessionEvent} in {GameMode}", sessionEvent, gameMode);
     }
 
@@ -181,7 +181,7 @@ public static class TelemetryLoggerExtensions
         var data = contextData ?? new Dictionary<string, object>();
         data["ErrorContext"] = context;
         data["ErrorTime"] = DateTime.UtcNow;
-        
+
         logger.LogError(exception, "Error in {Context}: {Message}", context, exception.Message);
     }
 }

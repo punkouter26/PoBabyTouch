@@ -1,0 +1,10 @@
+graph TB
+    Layout[MainLayout] --> Home[Home]
+    Layout --> Game[Game]
+    Layout --> Scores[HighScores]
+    
+    Game --> Display[HighScoreDisplay]
+    Scores --> Display
+    
+    style Layout fill:#2196F3
+    style Game fill:#4CAF50

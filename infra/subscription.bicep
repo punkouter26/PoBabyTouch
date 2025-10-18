@@ -4,7 +4,7 @@ targetScope = 'subscription'
 param location string = 'eastus'
 
 @description('Name of the resource group (same as solution name)')
-param resourceGroupName string = 'PoBabyTouchGc'
+param resourceGroupName string = 'PoBabyTouch'
 
 @description('Environment name (dev, prod, etc.)')
 param environmentName string = 'dev'
@@ -15,7 +15,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   location: location
   tags: {
     environment: environmentName
-    project: 'PoBabyTouchGc'
+    project: 'PoBabyTouch'
     'azd-env-name': environmentName
   }
 }

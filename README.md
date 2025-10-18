@@ -1,4 +1,4 @@
-# PoBabyTouchGc
+# PoBabyTouch
 
 A fun and interactive baby touch game built with Blazor WebAssembly and .NET, designed to teach babies about cause and effect through colorful character circles with physics-based movement.
 
@@ -15,10 +15,10 @@ A fun and interactive baby touch game built with Blazor WebAssembly and .NET, de
    dotnet run --project Server/PoBabyTouchGc.Server
    ```
 
-3. **Open Browser**: Navigate to `https://localhost:7000`
+3. **Open Browser**: Navigate to `http://localhost:5000`
 
 ### Run on Azure (Production)
-Visit the live deployment: **https://pobabytouch-app.azurewebsites.net**
+Visit the live deployment: **https://pobabytouch.azurewebsites.net**
 
 ## 🌟 Features
 
@@ -51,8 +51,8 @@ Visit the live deployment: **https://pobabytouch-app.azurewebsites.net**
 
 1. **Clone and Navigate**:
    ```powershell
-   git clone https://github.com/your-username/PoBabyTouchGc.git
-   cd PoBabyTouchGc
+   git clone https://github.com/punkouter26/PoBabyTouch.git
+   cd PoBabyTouch
    ```
 
 2. **Start Storage Emulator**:
@@ -65,7 +65,7 @@ Visit the live deployment: **https://pobabytouch-app.azurewebsites.net**
    dotnet run --project Server/PoBabyTouchGc.Server
    ```
 
-4. **Open Browser**: Navigate to `https://localhost:7000`
+4. **Open Browser**: Navigate to `http://localhost:5000`
 
 ### Using Azure Resources
 
@@ -74,9 +74,10 @@ Replace `appsettings.Development.json` connection strings with your Azure resour
 ## ☁️ Azure Deployment
 
 The game is deployed to Azure App Service with the following resources:
-- **Storage Account**: pobabytouchstorage (Table Storage for high scores)
-- **Application Insights**: PoBabyTouch-insights (telemetry and monitoring)
-- **App Service**: PoBabyTouch-app (hosted at https://pobabytouch-app.azurewebsites.net)
+- **Storage Account**: pobabytouch (Table Storage for high scores)
+- **Application Insights**: PoBabyTouch (telemetry and monitoring)
+- **App Service**: PoBabyTouch (hosted at https://pobabytouch.azurewebsites.net)
+- **Resource Group**: PoBabyTouch (eastus2 region)
 
 ## 🧪 Testing
 
@@ -93,11 +94,12 @@ All tests include Azure Table Storage integration with automatic cleanup.
 ## 📁 Project Structure
 
 ```
-PoBabyTouchGc/
+PoBabyTouch/
 ├── Client/PoBabyTouchGc.Client/          # Blazor WebAssembly UI
 ├── Server/PoBabyTouchGc.Server/          # ASP.NET Core API
 ├── Shared/PoBabyTouchGc.Shared/          # Shared models and contracts
 ├── PoBabyTouchGc.Tests/                  # Integration and unit tests
+├── infra/                                # Bicep infrastructure files
 ├── Diagram/                              # Mermaid diagrams and visuals
 └── AzuriteData/                          # Local storage emulator data
 ```

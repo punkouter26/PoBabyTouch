@@ -118,7 +118,7 @@ public class LogController : ControllerBase
             }
 
             // Track telemetry for Application Insights using the standard logger
-            _logger.LogInformation("Client log received: {Level} - {Category} - {Message}", 
+            _logger.LogInformation("Client log received: {Level} - {Category} - {Message}",
                 logRequest.Level, logRequest.Category, logRequest.Message);
 
             return Ok(new ApiResponse<object>

@@ -1,0 +1,12 @@
+flowchart TD
+    Start([Play Game]) --> Game[Game Active]
+    Game --> Click{Circle Clicked?}
+    Click -->|Yes| AddScore[Add Score]
+    Click -->|No| Game
+    AddScore --> Game
+    Game --> TimeUp{Time Up?}
+    TimeUp -->|No| Game
+    TimeUp -->|Yes| End([Game Over])
+    
+    style Start fill:#4CAF50
+    style End fill:#F44336

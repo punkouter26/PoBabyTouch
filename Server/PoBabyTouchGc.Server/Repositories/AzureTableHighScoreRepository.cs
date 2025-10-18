@@ -11,7 +11,7 @@ namespace PoBabyTouchGc.Server.Repositories
     public class AzureTableHighScoreRepository : IHighScoreRepository
     {
         private readonly ILogger<AzureTableHighScoreRepository> _logger;
-        private const string TableName = "PoBabyTouchGcHighScores";
+        private const string TableName = "PoBabyTouchHighScores";
         private readonly TableClient _tableClient;
 
         public AzureTableHighScoreRepository(TableServiceClient tableServiceClient, ILogger<AzureTableHighScoreRepository> logger)

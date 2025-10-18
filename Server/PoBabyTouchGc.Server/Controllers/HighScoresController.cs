@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PoBabyTouchGc.Shared.Models;
 using PoBabyTouchGc.Server.Services;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
 using HighScore = PoBabyTouchGc.Shared.Models.HighScore; // Use the shared model for API responses
 
 namespace PoBabyTouchGc.Server.Controllers
@@ -12,15 +14,18 @@ namespace PoBabyTouchGc.Server.Controllers
         private readonly IHighScoreService _highScoreService;
         private readonly IHighScoreValidationService _validationService;
         private readonly ILogger<HighScoresController> _logger;
+        private readonly TelemetryClient _telemetryClient;
 
         public HighScoresController(
             IHighScoreService highScoreService,
             IHighScoreValidationService validationService,
-            ILogger<HighScoresController> logger)
+            ILogger<HighScoresController> logger,
+            TelemetryClient telemetryClient)
         {
             _highScoreService = highScoreService;
             _validationService = validationService;
             _logger = logger;
+            _telemetryClient = telemetryClient;
         }
 
         /// <summary>
@@ -36,15 +41,25 @@ namespace PoBabyTouchGc.Server.Controllers
             {
                 _logger.LogDebug("Getting top {Count} scores for {GameMode} mode", count, gameMode);
 
-                // Telemetry: Track API usage
-                _logger.LogInformation("API Request: GetTopScores - Count: {Count}, GameMode: {GameMode}, UserAgent: {UserAgent}", 
-                    count, gameMode, Request.Headers["User-Agent"].ToString());
+                // Application Insights: Track custom event for leaderboard views
+                _telemetryClient.TrackEvent("LeaderboardViewed", new Dictionary<string, string>
+                {
+                    { "GameMode", gameMode },
+                    { "Count", count.ToString() },
+                    { "UserAgent", Request.Headers["User-Agent"].ToString() }
+                });
 
                 var scores = await _highScoreService.GetTopScoresAsync(count, gameMode);
-                
+
                 // Telemetry: Track performance and results
                 var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-                _logger.LogInformation("API Performance: GetTopScores completed in {Duration}ms, returned {ScoreCount} scores", 
+                _telemetryClient.TrackMetric("LeaderboardLoadTime", duration, new Dictionary<string, string>
+                {
+                    { "GameMode", gameMode },
+                    { "ScoreCount", scores.Count.ToString() }
+                });
+                
+                _logger.LogInformation("API Performance: GetTopScores completed in {Duration}ms, returned {ScoreCount} scores",
                     duration, scores.Count);
 
                 return Ok(ApiResponse<List<HighScore>>.SuccessResult(scores));
@@ -52,7 +67,7 @@ namespace PoBabyTouchGc.Server.Controllers
             catch (Exception ex)
             {
                 var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-                _logger.LogError(ex, "API Error: GetTopScores failed after {Duration}ms for GameMode: {GameMode}", 
+                _logger.LogError(ex, "API Error: GetTopScores failed after {Duration}ms for GameMode: {GameMode}",
                     duration, gameMode);
                 return StatusCode(500, ApiResponse<List<HighScore>>.ErrorResult("Failed to retrieve top scores"));
             }
@@ -70,9 +85,16 @@ namespace PoBabyTouchGc.Server.Controllers
                 _logger.LogDebug("Saving high score: {PlayerInitials} - {Score} points",
                     request.PlayerInitials, request.Score);
 
-                // Telemetry: Track high score submission attempts
-                _logger.LogInformation("HighScore Submission: Player: {PlayerInitials}, Score: {Score}, GameMode: {GameMode}, UserAgent: {UserAgent}", 
-                    request.PlayerInitials, request.Score, request.GameMode, Request.Headers["User-Agent"].ToString());
+                // Application Insights: Track high score submission attempt
+                _telemetryClient.TrackEvent("HighScoreSubmitted", new Dictionary<string, string>
+                {
+                    { "PlayerInitials", request.PlayerInitials },
+                    { "GameMode", request.GameMode ?? "Default" },
+                    { "UserAgent", Request.Headers["User-Agent"].ToString() }
+                }, new Dictionary<string, double>
+                {
+                    { "Score", request.Score }
+                });
 
                 // Use validation service instead of inline validation
                 var validationResult = _validationService.ValidateHighScore(request);
@@ -80,9 +102,19 @@ namespace PoBabyTouchGc.Server.Controllers
                 if (!validationResult.IsValid)
                 {
                     // Telemetry: Track validation failures
-                    _logger.LogWarning("HighScore Validation Failed: Player: {PlayerInitials}, Score: {Score}, Error: {ValidationError}", 
-                        request.PlayerInitials, request.Score, validationResult.ErrorMessage);
+                    _telemetryClient.TrackEvent("HighScoreValidationFailed", new Dictionary<string, string>
+                    {
+                        { "PlayerInitials", request.PlayerInitials },
+                        { "ValidationError", validationResult.ErrorMessage ?? "Unknown" },
+                        { "GameMode", request.GameMode ?? "Default" }
+                    }, new Dictionary<string, double>
+                    {
+                        { "Score", request.Score }
+                    });
                     
+                    _logger.LogWarning("HighScore Validation Failed: Player: {PlayerInitials}, Score: {Score}, Error: {ValidationError}",
+                        request.PlayerInitials, request.Score, validationResult.ErrorMessage);
+
                     var validationResponse = ApiResponse<object>.ErrorResult(validationResult.ErrorMessage ?? "Validation Error");
                     return BadRequest(validationResponse);
                 }
@@ -96,19 +128,29 @@ namespace PoBabyTouchGc.Server.Controllers
 
                 if (success)
                 {
-                    // Telemetry: Track successful high score saves
-                    _logger.LogInformation("HighScore Success: Player: {PlayerInitials}, Score: {Score}, GameMode: {GameMode}, Duration: {Duration}ms", 
-                        request.PlayerInitials, request.Score, request.GameMode, duration);
+                    // Application Insights: Track successful high score saves
+                    _telemetryClient.TrackEvent("HighScoreSaved", new Dictionary<string, string>
+                    {
+                        { "PlayerInitials", request.PlayerInitials },
+                        { "GameMode", request.GameMode ?? "Default" }
+                    }, new Dictionary<string, double>
+                    {
+                        { "Score", request.Score },
+                        { "SaveDurationMs", duration }
+                    });
                     
+                    _logger.LogInformation("HighScore Success: Player: {PlayerInitials}, Score: {Score}, GameMode: {GameMode}, Duration: {Duration}ms",
+                        request.PlayerInitials, request.Score, request.GameMode, duration);
+
                     var response = ApiResponse<object>.SuccessResult(new { message = "High score saved successfully" }, "High score saved successfully");
                     return Ok(response);
                 }
                 else
                 {
                     // Telemetry: Track failed saves
-                    _logger.LogError("HighScore Save Failed: Player: {PlayerInitials}, Score: {Score}, GameMode: {GameMode}, Duration: {Duration}ms", 
+                    _logger.LogError("HighScore Save Failed: Player: {PlayerInitials}, Score: {Score}, GameMode: {GameMode}, Duration: {Duration}ms",
                         request.PlayerInitials, request.Score, request.GameMode, duration);
-                    
+
                     var response = ApiResponse<object>.ErrorResult("Failed to save high score");
                     return StatusCode(500, response);
                 }
@@ -238,5 +280,59 @@ namespace PoBabyTouchGc.Server.Controllers
             }
         }
     }
-
 }
+
+/* ==================== APPLICATION INSIGHTS KQL QUERIES ====================
+ * Use these queries in Azure Portal > Application Insights > Logs
+ * 
+ * QUERY 1: High Score Submissions by Player and Game Mode (Last 7 Days)
+ * -----------------------------------------------------------------------
+ * Shows which players are most active and their score distribution
+ * 
+ * customEvents
+ * | where timestamp > ago(7d)
+ * | where name == "HighScoreSaved"
+ * | extend PlayerInitials = tostring(customDimensions.PlayerInitials),
+ *          GameMode = tostring(customDimensions.GameMode),
+ *          Score = todouble(customMeasurements.Score)
+ * | summarize SubmissionCount = count(), 
+ *             AvgScore = avg(Score), 
+ *             MaxScore = max(Score),
+ *             MinScore = min(Score) by PlayerInitials, GameMode
+ * | order by SubmissionCount desc
+ * 
+ * 
+ * QUERY 2: Leaderboard Performance Metrics (Last 24 Hours)
+ * ---------------------------------------------------------
+ * Tracks API response times and usage patterns
+ * 
+ * customMetrics
+ * | where timestamp > ago(24h)
+ * | where name == "LeaderboardLoadTime"
+ * | extend GameMode = tostring(customDimensions.GameMode),
+ *          ScoreCount = tostring(customDimensions.ScoreCount)
+ * | summarize RequestCount = count(),
+ *             AvgLoadTime = avg(value),
+ *             P50 = percentile(value, 50),
+ *             P95 = percentile(value, 95),
+ *             P99 = percentile(value, 99) by GameMode
+ * | order by RequestCount desc
+ * 
+ * 
+ * QUERY 3: Validation Failures and Error Analysis
+ * ------------------------------------------------
+ * Identifies common validation issues and potential cheating attempts
+ * 
+ * customEvents
+ * | where timestamp > ago(7d)
+ * | where name == "HighScoreValidationFailed"
+ * | extend PlayerInitials = tostring(customDimensions.PlayerInitials),
+ *          ValidationError = tostring(customDimensions.ValidationError),
+ *          Score = todouble(customMeasurements.Score)
+ * | summarize FailureCount = count(),
+ *             AvgInvalidScore = avg(Score),
+ *             MaxInvalidScore = max(Score) by ValidationError
+ * | order by FailureCount desc
+ * 
+ * ==================== END KQL QUERIES ====================
+ */

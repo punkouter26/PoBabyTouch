@@ -1,4 +1,4 @@
-# PoBabyTouchGc - Product Requirements Document (PRD)
+# PoBabyTouch - Product Requirements Document (PRD)
 
 ## Table of Contents
 1. [Application Overview](#application-overview)
@@ -11,7 +11,7 @@
 ## Application Overview
 
 ### Product Vision
-PoBabyTouchGc is an interactive baby touch game built with Blazor WebAssembly and .NET, designed to provide a fun and engaging way for babies to learn about cause and effect through colorful circle-touching gameplay.
+PoBabyTouch is an interactive baby touch game built with Blazor WebAssembly and .NET, designed to provide a fun and engaging way for babies to learn about cause and effect through colorful circle-touching gameplay.
 
 ### Core Features
 - **Real-time Circle Game**: Dynamic circles with physics-based movement featuring characters (Matt, Nick, Kim)

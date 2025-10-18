@@ -5,7 +5,7 @@ param location string = resourceGroup().location
 param environmentName string
 
 // Common naming convention - all resources use the same name as the resource group
-var baseName = 'PoBabyTouchGc'
+var baseName = 'PoBabyTouch'
 
 // Storage Account for Table Storage (required by the application)
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
@@ -67,8 +67,8 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 
 // Reference existing shared App Service Plan (F1 tier)
 resource existingAppServicePlan 'Microsoft.Web/serverfarms@2023-12-01' existing = {
-  name: 'PoHappyTrump-plan'
-  scope: resourceGroup('PoHappyTrump')
+  name: 'PoShared'
+  scope: resourceGroup('PoShared')
 }
 
 // App Service (Web App) - Using existing shared F1 plan

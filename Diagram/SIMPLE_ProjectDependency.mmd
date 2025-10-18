@@ -1,0 +1,9 @@
+graph LR
+    Client[Client<br/>Blazor] -->|HTTP| Server[Server<br/>API]
+    Server --> Storage[(Table<br/>Storage)]
+    Server --> AI[App<br/>Insights]
+    
+    style Client fill:#4CAF50
+    style Server fill:#2196F3
+    style Storage fill:#FF9800
+    style AI fill:#00BCD4

@@ -26,7 +26,7 @@ if (File.Exists(secretsPath))
 }
 
 // Configure Application Insights - try multiple configuration sources
-var appInsightsConnectionString = 
+var appInsightsConnectionString =
     builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] ?? // Direct config
     builder.Configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING") ?? // ConnectionStrings section
     builder.Configuration["ApplicationInsights:ConnectionString"]; // Nested config
@@ -106,9 +106,9 @@ builder.Services.AddSingleton<TableServiceClient>(implementationFactory =>
         }
 
         // Ensure the high scores table exists
-        var tableClient = tableServiceClient.GetTableClient("PoBabyTouchGcHighScores");
+        var tableClient = tableServiceClient.GetTableClient("PoBabyTouchHighScores");
         tableClient.CreateIfNotExists();
-        Log.Information("Successfully initialized TableServiceClient and verified 'PoBabyTouchGcHighScores' table");
+        Log.Information("Successfully initialized TableServiceClient and verified 'PoBabyTouchHighScores' table");
         return tableServiceClient;
     }
     catch (Exception ex)
