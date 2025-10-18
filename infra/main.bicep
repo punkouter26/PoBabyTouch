@@ -119,6 +119,7 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
   tags: {
     environment: environmentName
     project: baseName
+    'azd-service-name': 'api'
   }
 }
 
