@@ -28,6 +28,10 @@ __blobstorage__/
 __queuestorage__/
 __tablestorage__/
 
+# Deployment artifacts
+deploy.zip
+publish/
+
 # User-specific files
 *.rsuser
 *.suo
