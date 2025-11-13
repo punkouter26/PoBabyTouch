@@ -57,58 +57,72 @@ builder.Services.AddControllers();
 // Configure Azure Table Storage
 // In development: Uses the UserSecrets connection string or Azurite
 // In production: Uses the connection string from App Service config
-string storageConnectionString = builder.Configuration.GetConnectionString("AzureTableStorage")
+string? storageConnectionString = builder.Configuration.GetConnectionString("AzureTableStorage")
     ?? Environment.GetEnvironmentVariable("AzureTableStorage")
-    ?? Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AzureTableStorage") // Azure App Service format
-    ?? Environment.GetEnvironmentVariable("SQLAZURECONNSTR_AzureTableStorage") // Alternative format
-    ?? "UseDevelopmentStorage=true"; // Default to Azurite if no connection string provided
+    ?? Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AzureTableStorage"); // Azure App Service format
+
+// For development, fallback to Azurite
+if (string.IsNullOrWhiteSpace(storageConnectionString) && builder.Environment.IsDevelopment())
+{
+    storageConnectionString = "UseDevelopmentStorage=true";
+}
 
 Log.Information("Environment: {Environment}", builder.Environment.EnvironmentName);
-Log.Information("Using {StorageType} for Azure Table Storage",
-    storageConnectionString == "UseDevelopmentStorage=true" ? "Azurite (local)" : "Azure Storage");
 
-// Enhanced logging for production connection string debugging
-if (!builder.Environment.IsDevelopment())
+if (string.IsNullOrWhiteSpace(storageConnectionString))
 {
-    Log.Information("Production connection string source: {Source}",
-        builder.Configuration.GetConnectionString("AzureTableStorage") != null ? "Configuration" :
-        Environment.GetEnvironmentVariable("AzureTableStorage") != null ? "AzureTableStorage env var" :
-        Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AzureTableStorage") != null ? "CUSTOMCONNSTR_AzureTableStorage env var" :
-        Environment.GetEnvironmentVariable("SQLAZURECONNSTR_AzureTableStorage") != null ? "SQLAZURECONNSTR_AzureTableStorage env var" :
-        "Fallback to Azurite");
+    Log.Warning("No Azure Table Storage connection string configured. Table storage will not be available.");
+}
+else
+{
+    Log.Information("Using {StorageType} for Azure Table Storage",
+        storageConnectionString == "UseDevelopmentStorage=true" ? "Azurite (local)" : "Azure Storage");
 
-    // Log connection string format (without exposing secrets)
-    Log.Information("Connection string format: {Format}",
-        storageConnectionString.StartsWith("DefaultEndpointsProtocol=https") ? "Azure Storage Account" :
-        storageConnectionString.StartsWith("UseDevelopmentStorage=true") ? "Azurite Local" :
-        "Unknown");
+    // Enhanced logging for production connection string debugging
+    if (!builder.Environment.IsDevelopment())
+    {
+        Log.Information("Production connection string source: {Source}",
+            builder.Configuration.GetConnectionString("AzureTableStorage") != null ? "Configuration" :
+            Environment.GetEnvironmentVariable("AzureTableStorage") != null ? "AzureTableStorage env var" :
+            Environment.GetEnvironmentVariable("CUSTOMCONNSTR_AzureTableStorage") != null ? "CUSTOMCONNSTR_AzureTableStorage env var" :
+            "Not found");
+
+        // Log connection string format (without exposing secrets)
+        Log.Information("Connection string format: {Format}",
+            storageConnectionString.StartsWith("DefaultEndpointsProtocol=https") ? "Azure Storage Account" :
+            storageConnectionString.StartsWith("UseDevelopmentStorage=true") ? "Azurite Local" :
+            "Unknown");
+    }
 }
 
 // Configure table storage client
 // Register TableServiceClient for high scores
 builder.Services.AddSingleton<TableServiceClient>(implementationFactory =>
 {
+    if (string.IsNullOrWhiteSpace(storageConnectionString))
+    {
+        Log.Error("Cannot initialize TableServiceClient: No connection string configured");
+        throw new InvalidOperationException("Azure Table Storage connection string is not configured. Please set the 'AzureTableStorage' connection string in App Service Configuration.");
+    }
+
     try
     {
         Log.Information("Initializing Azure TableServiceClient for high scores");
         var tableServiceClient = new TableServiceClient(storageConnectionString);
 
-        // Test connection by attempting to get service properties
+        // Only test connection and create tables in non-production or during startup
+        // This prevents blocking the app startup if storage is temporarily unavailable
         try
         {
-            _ = tableServiceClient.GetProperties();
-            Log.Information("TableServiceClient connection test successful");
+            var tableClient = tableServiceClient.GetTableClient("PoBabyTouchHighScores");
+            tableClient.CreateIfNotExists();
+            Log.Information("Successfully initialized TableServiceClient and verified 'PoBabyTouchHighScores' table");
         }
-        catch (Exception testEx)
+        catch (Exception setupEx)
         {
-            Log.Error(testEx, "TableServiceClient connection test failed");
-            throw;
+            Log.Warning(setupEx, "Failed to verify table setup during initialization. Table operations may fail until storage is available.");
         }
 
-        // Ensure the high scores table exists
-        var tableClient = tableServiceClient.GetTableClient("PoBabyTouchHighScores");
-        tableClient.CreateIfNotExists();
-        Log.Information("Successfully initialized TableServiceClient and verified 'PoBabyTouchHighScores' table");
         return tableServiceClient;
     }
     catch (Exception ex)
