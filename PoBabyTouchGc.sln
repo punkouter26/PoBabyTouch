@@ -2,13 +2,13 @@
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoBabyTouchGc.Client", "Client\PoBabyTouchGc.Client\PoBabyTouchGc.Client.csproj", "{1A8F5343-710A-4A3D-B226-71CDB6F7E02B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoBabyTouchGc.Client", "src\PoBabyTouchGc.Client\PoBabyTouchGc.Client.csproj", "{1A8F5343-710A-4A3D-B226-71CDB6F7E02B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoBabyTouchGc.Server", "Server\PoBabyTouchGc.Server\PoBabyTouchGc.Server.csproj", "{B7F1D3C5-8A70-4B98-91B6-63E94AE00E1D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoBabyTouchGc.Api", "src\PoBabyTouchGc.Api\PoBabyTouchGc.Api.csproj", "{B7F1D3C5-8A70-4B98-91B6-63E94AE00E1D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoBabyTouchGc.Shared", "Shared\PoBabyTouchGc.Shared\PoBabyTouchGc.Shared.csproj", "{9F814FA6-EB39-40C2-A558-26A2584CC7F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoBabyTouchGc.Shared", "src\PoBabyTouchGc.Shared\PoBabyTouchGc.Shared.csproj", "{9F814FA6-EB39-40C2-A558-26A2584CC7F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoBabyTouchGc.Tests", "PoBabyTouchGc.Tests\PoBabyTouchGc.Tests.csproj", "{80C5DC96-DAF2-4570-9915-01B8A60D87E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoBabyTouchGc.Tests", "tests\PoBabyTouchGc.Tests\PoBabyTouchGc.Tests.csproj", "{80C5DC96-DAF2-4570-9915-01B8A60D87E9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

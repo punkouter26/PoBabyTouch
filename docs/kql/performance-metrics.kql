@@ -1,0 +1,88 @@
+// Performance Metrics Queries for Azure Application Insights
+// Use in: Azure Portal > Application Insights > Logs
+
+// ============================================================
+// QUERY 1: API Response Times (Percentiles)
+// ============================================================
+// Tracks API endpoint performance with percentile analysis
+requests
+| where timestamp > ago(24h)
+| summarize 
+    RequestCount = count(),
+    AvgDuration = avg(duration),
+    P50 = percentile(duration, 50),
+    P90 = percentile(duration, 90),
+    P95 = percentile(duration, 95),
+    P99 = percentile(duration, 99)
+    by name
+| order by RequestCount desc
+
+// ============================================================
+// QUERY 2: Slowest API Endpoints (Last 24 Hours)
+// ============================================================
+// Identifies performance bottlenecks
+requests
+| where timestamp > ago(24h)
+| summarize 
+    RequestCount = count(),
+    AvgDuration = avg(duration),
+    MaxDuration = max(duration)
+    by name
+| where AvgDuration > 1000 // Endpoints taking > 1 second
+| order by AvgDuration desc
+
+// ============================================================
+// QUERY 3: High Score API Performance Breakdown
+// ============================================================
+// Detailed performance metrics for high score endpoints
+requests
+| where timestamp > ago(24h)
+| where name contains "highscore"
+| summarize 
+    Calls = count(),
+    AvgMs = avg(duration),
+    P95Ms = percentile(duration, 95)
+    by name, resultCode
+| order by Calls desc
+
+// ============================================================
+// QUERY 4: Performance Trends (Hourly)
+// ============================================================
+// Visualize performance trends over time
+requests
+| where timestamp > ago(7d)
+| summarize 
+    AvgDuration = avg(duration),
+    RequestCount = count()
+    by bin(timestamp, 1h)
+| render timechart
+
+// ============================================================
+// QUERY 5: Azure Table Storage Performance
+// ============================================================
+// Monitor table storage operation performance
+dependencies
+| where timestamp > ago(24h)
+| where type == "Azure table"
+| summarize 
+    OperationCount = count(),
+    AvgDuration = avg(duration),
+    P95Duration = percentile(duration, 95)
+    by name
+| order by OperationCount desc
+
+// ============================================================
+// QUERY 6: Performance Degradation Detection
+// ============================================================
+// Compare current performance to baseline
+let baseline = requests
+    | where timestamp between(ago(7d) .. ago(1d))
+    | summarize BaselineAvg = avg(duration) by name;
+requests
+| where timestamp > ago(1h)
+| summarize CurrentAvg = avg(duration) by name
+| join kind=inner baseline on name
+| extend PerformanceDelta = ((CurrentAvg - BaselineAvg) / BaselineAvg) * 100
+| where PerformanceDelta > 20 // Alert on 20% degradation
+| project name, CurrentAvg, BaselineAvg, PerformanceDelta
+| order by PerformanceDelta desc

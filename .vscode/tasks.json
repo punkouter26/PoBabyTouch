@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/Server/PoBabyTouchGc.Server/PoBabyTouchGc.Server.csproj"
+                "${workspaceFolder}/src/PoBabyTouchGc.Api/PoBabyTouchGc.Api.csproj"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -43,7 +43,7 @@
             "type": "process",
             "args": [
                 "clean",
-                "${workspaceFolder}/PoBabyTouchGc.IntegrationTests",
+                "${workspaceFolder}/PoBabyTouchGc.sln",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -55,7 +55,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/PoBabyTouchGc.IntegrationTests",
+                "${workspaceFolder}/PoBabyTouchGc.sln",
                 "--configuration",
                 "Release",
                 "/property:GenerateFullPaths=true",

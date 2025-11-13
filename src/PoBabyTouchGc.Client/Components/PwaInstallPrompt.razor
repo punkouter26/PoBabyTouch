@@ -1,0 +1,68 @@
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@if (showInstallPrompt)
+{
+    <FluentMessageBar Intent="MessageIntent.Info" Class="install-prompt">
+        <FluentStack Orientation="FluentOrientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+            <div class="install-prompt-content">
+                📱
+                <span>Install PoBabyTouch app for offline play!</span>
+            </div>
+            <FluentStack Orientation="FluentOrientation.Horizontal" HorizontalGap="10">
+                <FluentButton Appearance="Appearance.Accent" OnClick="InstallApp">
+                    Install
+                </FluentButton>
+                <FluentButton Appearance="Appearance.Neutral" OnClick="DismissPrompt">
+                    Not Now
+                </FluentButton>
+            </FluentStack>
+        </FluentStack>
+    </FluentMessageBar>
+}
+
+@code {
+    private bool showInstallPrompt = false;
+    private IJSObjectReference? module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                module = await JS.InvokeAsync<IJSObjectReference>(
+                    "import", "./js/pwa-install.js");
+                
+                showInstallPrompt = await module.InvokeAsync<bool>("canInstall");
+                StateHasChanged();
+            }
+            catch
+            {
+                // PWA not supported or already installed
+            }
+        }
+    }
+
+    private async Task InstallApp()
+    {
+        if (module != null)
+        {
+            await module.InvokeVoidAsync("promptInstall");
+            showInstallPrompt = false;
+        }
+    }
+
+    private void DismissPrompt()
+    {
+        showInstallPrompt = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module != null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+}
