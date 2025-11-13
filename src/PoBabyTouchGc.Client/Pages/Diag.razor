@@ -13,22 +13,23 @@
             <div class="spinner-border spinner-border-sm me-2" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            Checking API health...
+            Checking API status
         </div>
     }
     
-    @if (apiHealthy)
+    @if (apiHealthy && !isLoading)
     {
-        <div class="alert alert-success">
-            <h4>✅ API is healthy</h4>
+        <div class="alert alert-success status-indicator success-status">
+            <h4>✅ Healthy</h4>
+            <p>API Status: OK</p>
             <small>Last checked: @lastCheckTime</small>
         </div>
     }
-    else if (!isLoading)
+    else if (!isLoading && !apiHealthy)
     {
-        <div class="alert alert-danger">
+        <div class="alert alert-danger status-indicator error-indicator">
             <h4>❌ API unavailable</h4>
-            <p>@errorMessage</p>
+            <p>Error: @errorMessage</p>
         </div>
     }
 

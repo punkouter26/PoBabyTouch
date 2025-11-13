@@ -23,8 +23,16 @@
             <div class="timer-display">Time: @timeRemaining</div>
         </div>
     }
+    else
+    {
+        <div class="game-header">
+            <div class="baby-mode-indicator">Baby Mode</div>
+            <div class="score-display">Score: @GameStateService.CurrentScore</div>
+        </div>
+    }
     
     <div class="game-area" @ref="gameAreaRef" @onclick="HandleBackgroundClick" @key="gameAreaKey">
+        <canvas @ref="canvasRef" width="1" height="1" style="position:absolute; top:0; left:0; pointer-events:none;"></canvas>
         @foreach (var circle in circles)
         {
             <div class="game-circle @circle.PersonClass @(circle.IsVisible ? "appear" : "disappear") @(circle.IsHit ? "hit-effect" : "")"
@@ -87,6 +95,7 @@
 
 @code {
     private ElementReference gameAreaRef;
+    private ElementReference canvasRef;
     private Timer? gameTimer;
     private Timer? physicsFpsTimer;
     private Random random = new Random();

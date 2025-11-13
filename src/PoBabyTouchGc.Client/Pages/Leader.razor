@@ -41,7 +41,7 @@
                     @for (int i = 0; i < leaderboardEntries.Count && i < 10; i++)
                     {
                         var entry = leaderboardEntries[i];
-                        <tr>
+                        <tr class="score">
                             <td class="rank-cell">#@(i + 1)</td>
                             <td class="initials-cell">@entry.PlayerInitials</td>
                             <td class="score-cell">@entry.Score</td>
