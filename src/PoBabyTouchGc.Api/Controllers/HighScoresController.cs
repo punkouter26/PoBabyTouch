@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PoBabyTouchGc.Shared.Models;
 using PoBabyTouchGc.Api.Features.HighScores;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
 using HighScore = PoBabyTouchGc.Shared.Models.HighScore; // Use the shared model for API responses
 
 namespace PoBabyTouchGc.Api.Controllers;
@@ -14,18 +12,15 @@ public class HighScoresController : ControllerBase
     private readonly IHighScoreService _highScoreService;
     private readonly IHighScoreValidationService _validationService;
     private readonly ILogger<HighScoresController> _logger;
-    private readonly TelemetryClient _telemetryClient;
 
     public HighScoresController(
         IHighScoreService highScoreService,
         IHighScoreValidationService validationService,
-        ILogger<HighScoresController> logger,
-        TelemetryClient telemetryClient)
+        ILogger<HighScoresController> logger)
     {
         _highScoreService = highScoreService;
         _validationService = validationService;
         _logger = logger;
-        _telemetryClient = telemetryClient;
     }
 
     /// <summary>
@@ -41,23 +36,9 @@ public class HighScoresController : ControllerBase
         {
             _logger.LogDebug("Getting top {Count} scores for {GameMode} mode", count, gameMode);
 
-            // Application Insights: Track custom event for leaderboard views
-            _telemetryClient.TrackEvent("LeaderboardViewed", new Dictionary<string, string>
-                {
-                    { "GameMode", gameMode },
-                    { "Count", count.ToString() },
-                    { "UserAgent", Request.Headers["User-Agent"].ToString() }
-                });
-
             var scores = await _highScoreService.GetTopScoresAsync(count, gameMode);
 
-            // Telemetry: Track performance and results
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-            _telemetryClient.TrackMetric("LeaderboardLoadTime", duration, new Dictionary<string, string>
-                {
-                    { "GameMode", gameMode },
-                    { "ScoreCount", scores.Count.ToString() }
-                });
 
             _logger.LogInformation("API Performance: GetTopScores completed in {Duration}ms, returned {ScoreCount} scores",
                 duration, scores.Count);
@@ -85,33 +66,11 @@ public class HighScoresController : ControllerBase
             _logger.LogDebug("Saving high score: {PlayerInitials} - {Score} points",
                 request.PlayerInitials, request.Score);
 
-            // Application Insights: Track high score submission attempt
-            _telemetryClient.TrackEvent("HighScoreSubmitted", new Dictionary<string, string>
-                {
-                    { "PlayerInitials", request.PlayerInitials },
-                    { "GameMode", request.GameMode ?? "Default" },
-                    { "UserAgent", Request.Headers["User-Agent"].ToString() }
-                }, new Dictionary<string, double>
-                {
-                    { "Score", request.Score }
-                });
-
             // Use validation service instead of inline validation
             var validationResult = _validationService.ValidateHighScore(request);
 
             if (!validationResult.IsValid)
             {
-                // Telemetry: Track validation failures
-                _telemetryClient.TrackEvent("HighScoreValidationFailed", new Dictionary<string, string>
-                    {
-                        { "PlayerInitials", request.PlayerInitials },
-                        { "ValidationError", validationResult.ErrorMessage ?? "Unknown" },
-                        { "GameMode", request.GameMode ?? "Default" }
-                    }, new Dictionary<string, double>
-                    {
-                        { "Score", request.Score }
-                    });
-
                 _logger.LogWarning("HighScore Validation Failed: Player: {PlayerInitials}, Score: {Score}, Error: {ValidationError}",
                     request.PlayerInitials, request.Score, validationResult.ErrorMessage);
 
@@ -128,17 +87,6 @@ public class HighScoresController : ControllerBase
 
             if (success)
             {
-                // Application Insights: Track successful high score saves
-                _telemetryClient.TrackEvent("HighScoreSaved", new Dictionary<string, string>
-                    {
-                        { "PlayerInitials", request.PlayerInitials },
-                        { "GameMode", request.GameMode ?? "Default" }
-                    }, new Dictionary<string, double>
-                    {
-                        { "Score", request.Score },
-                        { "SaveDurationMs", duration }
-                    });
-
                 _logger.LogInformation("HighScore Success: Player: {PlayerInitials}, Score: {Score}, GameMode: {GameMode}, Duration: {Duration}ms",
                     request.PlayerInitials, request.Score, request.GameMode, duration);
 

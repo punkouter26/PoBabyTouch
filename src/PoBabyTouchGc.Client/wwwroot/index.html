@@ -12,11 +12,6 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/layout.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#512bd4" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="BabyTouch" />
     <link href="PoBabyTouchGc.Client.styles.css" rel="stylesheet" />
 </head>
 
@@ -38,14 +33,6 @@
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="js/game.js"></script>
-    <script>
-        // Register service worker for PWA support
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(registration => console.log('Service Worker registered'))
-                .catch(error => console.log('Service Worker registration failed:', error));
-        }
-    </script>
 </body>
 
 </html>
