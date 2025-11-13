@@ -33,7 +33,7 @@ jobs:
         run: dotnet clean --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish Server/PoBabyTouchGc.Server/PoBabyTouchGc.Server.csproj -c Release -o ./publish
+        run: dotnet publish src/PoBabyTouchGc.Api/PoBabyTouchGc.Api.csproj -c Release -o ./publish
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
