@@ -12,12 +12,12 @@ public class HealthController : ControllerBase
 {
     private readonly TableServiceClient _tableServiceClient;
     private readonly ILogger<HealthController> _logger;
-    private readonly TelemetryConfiguration _telemetryConfiguration;
+    private readonly TelemetryConfiguration? _telemetryConfiguration;
 
     public HealthController(
         TableServiceClient tableServiceClient,
         ILogger<HealthController> logger,
-        TelemetryConfiguration telemetryConfiguration)
+        TelemetryConfiguration? telemetryConfiguration = null)
     {
         _tableServiceClient = tableServiceClient;
         _logger = logger;
@@ -62,7 +62,7 @@ public class HealthController : ControllerBase
         // Check Application Insights connectivity
         try
         {
-            var connectionString = _telemetryConfiguration.ConnectionString;
+            var connectionString = _telemetryConfiguration?.ConnectionString;
             if (!string.IsNullOrEmpty(connectionString))
             {
                 // Application Insights is configured
