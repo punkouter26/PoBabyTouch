@@ -1,0 +1,74 @@
+# Copilot Ignore File
+# Restrict AI attention to relevant source code and configurations only
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# IDE and tool files
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Node modules
+**/node_modules/
+
+# Test results and coverage
+**/TestResults/
+**/coverage/
+**/.coverage
+**/coverlet.runsettings
+
+# Logs
+*.log
+**/logs/
+
+# Package caches
+packages/
+~/.nuget/
+
+# Generated files
+**/*.g.cs
+**/*.designer.cs
+
+# Azure artifacts
+**/azurite*/
+**/__azurite*/
+**/__blobstorage__/
+**/__queuestorage__/
+**/__tablestorage__/
+
+# Secrets (should never be in context)
+**/appsettings.secrets.json
+**/secrets.json
+**/*.env
+**/.env.*
+
+# Large binary files
+**/wwwroot/lib/
+**/*.woff
+**/*.woff2
+**/*.ttf
+**/*.eot
+**/*.ico
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.svg
+**/*.mp3
+**/*.wav
+**/*.ogg
+
+# Playwright
+**/playwright-report/
+**/test-results/
+
+# Build artifacts
+**/Debug/
+**/Release/

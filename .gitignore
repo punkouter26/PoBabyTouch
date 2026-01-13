@@ -508,3 +508,22 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# .NET Aspire
+.aspire/
+aspire-manifest.json
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Node.js (for Playwright E2E tests)
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Test coverage
+coverage/
+*.lcov

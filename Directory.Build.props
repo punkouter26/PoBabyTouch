@@ -1,0 +1,35 @@
+<Project>
+  <PropertyGroup>
+    <!-- Enable warnings as errors for all projects -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    
+    <!-- Enable nullable reference types -->
+    <Nullable>enable</Nullable>
+    
+    <!-- Enable implicit usings -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    
+    <!-- Consistent language version -->
+    <LangVersion>latest</LangVersion>
+    
+    <!-- Enable deterministic builds -->
+    <Deterministic>true</Deterministic>
+    
+    <!-- Enable source link for debugging -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    
+    <!-- Company and product information -->
+    <Authors>PoBabyTouchGc Team</Authors>
+    <Company>PoBabyTouchGc</Company>
+    <Product>PoBabyTouchGc</Product>
+    
+    <!-- Enable latest analysis -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    
+    <!-- Suppress known Aspire transitive dependency vulnerability (KubernetesClient) until upstream fix -->
+    <!-- https://github.com/advisories/GHSA-w7r3-mgwf-4mqq -->
+    <NoWarn>$(NoWarn);NU1902</NoWarn>
+  </PropertyGroup>
+</Project>
