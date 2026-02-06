@@ -1,5 +1,4 @@
 using Azure.Data.Tables;
-using Azure.Identity;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry;
@@ -12,29 +11,12 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Azure Key Vault Configuration ────────────────────────────────────────────
-// Key Vault references in App Service app settings handle secret injection.
-// AddAzureKeyVault is used only as a supplemental config source and must not
-// crash the app if the vault is unreachable or the identity lacks list access.
-var keyVaultUri = builder.Configuration["KeyVault:VaultUri"];
-if (!string.IsNullOrWhiteSpace(keyVaultUri))
-{
-    try
-    {
-        builder.Configuration.AddAzureKeyVault(
-            new Uri(keyVaultUri),
-            new DefaultAzureCredential(),
-            new Azure.Extensions.AspNetCore.Configuration.Secrets.AzureKeyVaultConfigurationOptions
-            {
-                ReloadInterval = TimeSpan.FromMinutes(30)
-            });
-    }
-    catch (Exception ex)
-    {
-        // Log but don't crash — Key Vault references in app settings still work
-        Console.WriteLine($"Warning: Could not load Key Vault configuration: {ex.Message}");
-    }
-}
+// ── Azure Key Vault ──────────────────────────────────────────────────────────
+// Secrets are injected via Key Vault references in App Service app settings
+// (e.g. @Microsoft.KeyVault(VaultName=…;SecretName=…)).
+// No AddAzureKeyVault call is needed — loading all secrets from a shared vault
+// causes cross-app config collisions (e.g. ConnectionStrings--AzureTableStorage
+// from another app overriding the correct value).
 
 // ── Serilog ──────────────────────────────────────────────────────────────────
 builder.Host.UseSerilog((context, services, configuration) =>

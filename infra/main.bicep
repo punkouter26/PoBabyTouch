@@ -113,7 +113,6 @@ resource staticWebApp 'Microsoft.Web/staticSites@2024-04-01' = {
 // ── App Service (API) — in PoBabyTouch RG, using shared plan from PoShared ──
 
 var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=core.windows.net'
-var keyVaultUri = 'https://${sharedKeyVaultName}${environment().suffixes.keyvaultDns}'
 
 // Store the storage connection string in Key Vault with app-name prefix
 module storageSecret 'modules/keyvault-secret.bicep' = {
@@ -147,7 +146,6 @@ resource appService 'Microsoft.Web/sites@2024-04-01' = {
         { name: 'ApplicationInsights__InstrumentationKey', value: sharedAppInsights.properties.InstrumentationKey }
         { name: 'ASPNETCORE_ENVIRONMENT', value: 'Production' }
         { name: 'ConnectionStrings__AzureTableStorage', value: '@Microsoft.KeyVault(VaultName=${sharedKeyVaultName};SecretName=PoBabyTouch-AzureTableStorage)' }
-        { name: 'KeyVault__VaultUri', value: keyVaultUri }
         { name: 'AllowedOrigins__0', value: 'https://${staticWebApp.properties.defaultHostname}' }
       ]
     }

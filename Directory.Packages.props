@@ -6,7 +6,6 @@
   <ItemGroup>
     <!-- Azure packages -->
     <PackageVersion Include="Azure.Data.Tables" Version="12.11.0" />
-    <PackageVersion Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
     <PackageVersion Include="Azure.Identity" Version="1.14.2" />
     <!-- Microsoft packages -->
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />

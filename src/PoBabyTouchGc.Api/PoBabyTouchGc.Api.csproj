@@ -9,8 +9,6 @@
   <ItemGroup>
     <!-- Azure packages -->
     <PackageReference Include="Azure.Data.Tables" />
-    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" />
-    <PackageReference Include="Azure.Identity" />
     <!-- Logging packages -->
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
     <PackageReference Include="Serilog.AspNetCore" />
