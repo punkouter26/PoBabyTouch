@@ -192,6 +192,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.API_APP_NAME }}
+          resource-group-name: ${{ env.RESOURCE_GROUP }}
           package: ./api-package
 
   # ── Deploy React to Static Web App ─────────────────────────────────────────

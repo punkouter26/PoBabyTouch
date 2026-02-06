@@ -1,8 +1,8 @@
 // ──────────────────────────────────────────────────────────────────────────────
 // PoBabyTouch – Infrastructure as Code (Bicep)
 //
-// PoBabyTouch RG:  Storage Account (Tables), Static Web App (React)
-// PoShared RG:     App Service (API) on shared Linux plan, Key Vault access
+// PoBabyTouch RG:  App Service (API), Storage Account (Tables), Static Web App
+// PoShared RG:     App Service Plan, Key Vault, App Insights, Log Analytics
 // ──────────────────────────────────────────────────────────────────────────────
 
 targetScope = 'resourceGroup'
@@ -31,7 +31,7 @@ param sharedKeyVaultName string = 'kv-poshared'
 @description('Shared Log Analytics workspace name in PoShared')
 param sharedLogAnalyticsName string = 'PoShared-LogAnalytics'
 
-@description('Location of the shared App Service Plan (must match)')
+@description('Location of the shared App Service Plan (must match the plan)')
 param sharedAppServicePlanLocation string = 'westus2'
 
 @description('Static Web App SKU')
@@ -62,6 +62,9 @@ resource sharedKeyVault 'Microsoft.KeyVault/vaults@2024-04-01' existing = {
   name: sharedKeyVaultName
   scope: resourceGroup(sharedResourceGroup)
 }
+
+// Full resource ID of the shared App Service Plan (cross-RG reference)
+var sharedAppServicePlanId = resourceId(sharedResourceGroup, 'Microsoft.Web/serverFarms', sharedAppServicePlanName)
 
 // ── Storage Account (Azure Table Storage) — in PoBabyTouch RG ───────────────
 
@@ -112,11 +115,12 @@ resource staticWebApp 'Microsoft.Web/staticSites@2024-04-01' = {
   }
 }
 
-// ── App Service (API) — deployed into PoShared RG ────────────────────────────
+// ── App Service (API) — in PoBabyTouch RG, using shared plan from PoShared ──
 
 var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=core.windows.net'
+var keyVaultUri = 'https://${sharedKeyVaultName}${environment().suffixes.keyvaultDns}'
 
-// Store the storage connection string in Key Vault with app-name prefix (non-shared secret)
+// Store the storage connection string in Key Vault with app-name prefix
 module storageSecret 'modules/keyvault-secret.bicep' = {
   name: 'secret-${appName}-AzureTableStorage'
   scope: resourceGroup(sharedResourceGroup)
@@ -127,23 +131,53 @@ module storageSecret 'modules/keyvault-secret.bicep' = {
   }
 }
 
-module apiAppService 'modules/appservice.bicep' = {
-  name: 'api-${appServiceName}'
-  scope: resourceGroup(sharedResourceGroup)
-  params: {
-    location: sharedAppServicePlanLocation
-    appServiceName: appServiceName
-    appServicePlanName: sharedAppServicePlanName
-    appInsightsConnectionString: sharedAppInsights.properties.ConnectionString
-    appInsightsInstrumentationKey: sharedAppInsights.properties.InstrumentationKey
-    keyVaultName: sharedKeyVaultName
-    keyVaultUri: 'https://${sharedKeyVaultName}${environment().suffixes.keyvaultDns}'
-    swaHostname: staticWebApp.properties.defaultHostname
-    logAnalyticsWorkspaceId: sharedLogAnalytics.id
+resource appService 'Microsoft.Web/sites@2024-04-01' = {
+  name: appServiceName
+  location: sharedAppServicePlanLocation // Must match the App Service Plan location
+  kind: 'app,linux'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    serverFarmId: sharedAppServicePlanId // Cross-RG reference to shared plan in PoShared
+    httpsOnly: true
+    siteConfig: {
+      linuxFxVersion: 'DOTNETCORE|10.0'
+      alwaysOn: false // Free tier doesn't support alwaysOn
+      ftpsState: 'Disabled'
+      minTlsVersion: '1.2'
+      healthCheckPath: '/health'
+      appSettings: [
+        { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: sharedAppInsights.properties.ConnectionString }
+        { name: 'ApplicationInsights__InstrumentationKey', value: sharedAppInsights.properties.InstrumentationKey }
+        { name: 'ASPNETCORE_ENVIRONMENT', value: 'Production' }
+        { name: 'ConnectionStrings__AzureTableStorage', value: '@Microsoft.KeyVault(VaultName=${sharedKeyVaultName};SecretName=PoBabyTouch-AzureTableStorage)' }
+        { name: 'KeyVault__VaultUri', value: keyVaultUri }
+        { name: 'AllowedOrigins__0', value: 'https://${staticWebApp.properties.defaultHostname}' }
+      ]
+    }
   }
   dependsOn: [
     storageSecret
   ]
+}
+
+// ── Diagnostic Settings for App Service ──────────────────────────────────────
+
+resource appServiceDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${appServiceName}-diagnostics'
+  scope: appService
+  properties: {
+    workspaceId: sharedLogAnalytics.id
+    logs: [
+      { category: 'AppServiceHTTPLogs', enabled: true }
+      { category: 'AppServiceConsoleLogs', enabled: true }
+      { category: 'AppServiceAppLogs', enabled: true }
+    ]
+    metrics: [
+      { category: 'AllMetrics', enabled: true }
+    ]
+  }
 }
 
 // ── Key Vault Access for App Service (Managed Identity) ──────────────────────
@@ -153,7 +187,7 @@ module keyVaultAccess 'modules/keyvault-access.bicep' = {
   scope: resourceGroup(sharedResourceGroup)
   params: {
     keyVaultName: sharedKeyVaultName
-    principalId: apiAppService.outputs.appServicePrincipalId
+    principalId: appService.identity.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -167,7 +201,7 @@ resource storageRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-
   scope: storageAccount
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageTableDataContributorRoleId)
-    principalId: apiAppService.outputs.appServicePrincipalId
+    principalId: appService.identity.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -177,8 +211,8 @@ resource storageRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-
 output resourceGroupName string = resourceGroup().name
 output storageAccountName string = storageAccount.name
 output appServiceName string = appServiceName
-output appServiceHostname string = apiAppService.outputs.appServiceHostname
-output appServiceUrl string = apiAppService.outputs.appServiceUrl
+output appServiceHostname string = appService.properties.defaultHostName
+output appServiceUrl string = 'https://${appService.properties.defaultHostName}'
 output staticWebAppName string = staticWebApp.name
 output staticWebAppHostname string = staticWebApp.properties.defaultHostname
 output staticWebAppUrl string = 'https://${staticWebApp.properties.defaultHostname}'
