@@ -58,11 +58,6 @@ resource sharedLogAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01
   scope: resourceGroup(sharedResourceGroup)
 }
 
-resource sharedKeyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
-  name: sharedKeyVaultName
-  scope: resourceGroup(sharedResourceGroup)
-}
-
 // Full resource ID of the shared App Service Plan (cross-RG reference)
 var sharedAppServicePlanId = resourceId(sharedResourceGroup, 'Microsoft.Web/serverFarms', sharedAppServicePlanName)
 
