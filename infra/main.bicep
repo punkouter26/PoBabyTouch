@@ -58,7 +58,7 @@ resource sharedLogAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01
   scope: resourceGroup(sharedResourceGroup)
 }
 
-resource sharedKeyVault 'Microsoft.KeyVault/vaults@2024-04-01' existing = {
+resource sharedKeyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
   name: sharedKeyVaultName
   scope: resourceGroup(sharedResourceGroup)
 }
