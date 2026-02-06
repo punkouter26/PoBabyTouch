@@ -32,6 +32,7 @@ __tablestorage__/
 deploy.zip
 publish/
 app-logs*/
+api-logs*/
 *.zip
 
 # User-specific files
