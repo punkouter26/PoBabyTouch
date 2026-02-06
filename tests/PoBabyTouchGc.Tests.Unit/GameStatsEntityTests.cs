@@ -1,5 +1,5 @@
 using Xunit;
-using PoBabyTouchGc.Shared.Models;
+using PoBabyTouchGc.Api.Models;
 
 namespace PoBabyTouchGc.Tests.Unit;
 

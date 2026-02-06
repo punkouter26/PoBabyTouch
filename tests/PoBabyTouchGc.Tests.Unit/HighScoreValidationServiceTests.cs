@@ -1,6 +1,6 @@
 using Xunit;
-using PoBabyTouchGc.Web.Features.HighScores;
-using PoBabyTouchGc.Shared.Models;
+using PoBabyTouchGc.Api.Features.HighScores;
+using PoBabyTouchGc.Api.Models;
 using Microsoft.Extensions.Logging;
 using Moq;
 

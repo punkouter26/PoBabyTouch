@@ -31,6 +31,8 @@ __tablestorage__/
 # Deployment artifacts
 deploy.zip
 publish/
+app-logs*/
+*.zip
 
 # User-specific files
 *.rsuser

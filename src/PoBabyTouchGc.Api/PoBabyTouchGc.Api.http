@@ -1,0 +1,46 @@
+@PoBabyTouchGc.Api_HostAddress = http://localhost:5000
+
+### Health Check
+GET {{PoBabyTouchGc.Api_HostAddress}}/api/health
+
+### Get Top Scores
+GET {{PoBabyTouchGc.Api_HostAddress}}/api/highscores?count=10&gameMode=Default
+
+### Save High Score
+POST {{PoBabyTouchGc.Api_HostAddress}}/api/highscores
+Content-Type: application/json
+
+{
+  "playerInitials": "TST",
+  "score": 1500,
+  "gameMode": "Default"
+}
+
+### Check if High Score
+GET {{PoBabyTouchGc.Api_HostAddress}}/api/highscores/check/1500?gameMode=Default
+
+### Get Player Rank
+GET {{PoBabyTouchGc.Api_HostAddress}}/api/highscores/rank/1500?gameMode=Default
+
+### Test Connection
+GET {{PoBabyTouchGc.Api_HostAddress}}/api/highscores/test
+
+### Diagnostics
+GET {{PoBabyTouchGc.Api_HostAddress}}/api/highscores/diagnostics
+
+### Get Player Stats
+GET {{PoBabyTouchGc.Api_HostAddress}}/api/stats/TST
+
+### Get All Stats
+GET {{PoBabyTouchGc.Api_HostAddress}}/api/stats
+
+### Record Game Session
+POST {{PoBabyTouchGc.Api_HostAddress}}/api/stats/record
+Content-Type: application/json
+
+{
+  "initials": "TST",
+  "score": 1500,
+  "circlesTapped": 75,
+  "playtimeSeconds": 180
+}

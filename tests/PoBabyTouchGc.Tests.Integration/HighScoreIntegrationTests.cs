@@ -1,37 +1,40 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using PoBabyTouchGc.Web.Features.HighScores;
+using PoBabyTouchGc.Api.Features.HighScores;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Xunit;
 using Azure.Data.Tables;
-using PoBabyTouchGc.Shared.Models; // Add this using directive
+using PoBabyTouchGc.Api.Models;
 
-namespace PoBabyTouchGc.IntegrationTests
+namespace PoBabyTouchGc.Tests.Integration;
+
+/// <summary>
+/// Integration tests for high score functionality
+/// Tests the complete flow from API to Azure Table Storage (Azurite via Testcontainers)
+/// </summary>
+[Collection(AzuriteCollection.Name)]
+public class HighScoreIntegrationTests : IAsyncLifetime
 {
-    /// <summary>
-    /// Integration tests for high score functionality
-    /// Tests the complete flow from API to Azure Table Storage
-    /// </summary>
-    public class HighScoreIntegrationTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
+    private readonly AzuriteWebApplicationFactory _factory;
+    private readonly HttpClient _client;
+    private readonly List<string> _testGameModes = new();
+
+    public HighScoreIntegrationTests(AzuriteWebApplicationFactory factory)
     {
-        private readonly WebApplicationFactory<Program> _factory;
-        private readonly HttpClient _client;
-        private readonly List<string> _testGameModes = new();
+        _factory = factory;
+        _client = _factory.CreateClient();
+    }
 
-        public HighScoreIntegrationTests(WebApplicationFactory<Program> factory)
-        {
-            _factory = factory;
-            _client = _factory.CreateClient();
-        }
+    public Task InitializeAsync() => Task.CompletedTask;
 
-        /// <summary>
-        /// Clean up test data after each test
-        /// </summary>
-        public void Dispose()
-        {
-            CleanupTestData().Wait();
-        }
+    /// <summary>
+    /// Async cleanup of test data after each test
+    /// </summary>
+    public async Task DisposeAsync()
+    {
+        await CleanupTestData();
+    }
 
         private async Task CleanupTestData()
         {
@@ -387,5 +390,4 @@ namespace PoBabyTouchGc.IntegrationTests
             Assert.All(hardScores, s => Assert.Equal(hardMode, s.GameMode));
         }
     }
-}
 

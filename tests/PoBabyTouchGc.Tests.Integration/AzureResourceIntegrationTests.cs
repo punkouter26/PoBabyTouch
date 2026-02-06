@@ -4,8 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.ApplicationInsights;
 using Azure.Data.Tables;
-using PoBabyTouchGc.Web;
-using PoBabyTouchGc.Shared.Models;
+using PoBabyTouchGc.Api;
+using PoBabyTouchGc.Api.Models;
 using System.Net;
 using Xunit;
 
@@ -13,14 +13,15 @@ namespace PoBabyTouchGc.Tests.Integration;
 
 /// <summary>
 /// Integration tests to verify Azure resource connections
-/// These tests verify that the application can connect to all required Azure services
+/// These tests verify that the application can connect to all required Azure services (Azurite via Testcontainers)
 /// </summary>
-public class AzureResourceIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+[Collection(AzuriteCollection.Name)]
+public class AzureResourceIntegrationTests
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly AzuriteWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
-    public AzureResourceIntegrationTests(WebApplicationFactory<Program> factory)
+    public AzureResourceIntegrationTests(AzuriteWebApplicationFactory factory)
     {
         _factory = factory;
         _client = _factory.CreateClient();

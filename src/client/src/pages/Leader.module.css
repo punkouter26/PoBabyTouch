@@ -1,0 +1,74 @@
+.container {
+  max-width: 800px; margin: 0 auto; padding: 20px;
+  display: flex; flex-direction: column; min-height: 100vh;
+  background: #000;
+  background-image:
+    linear-gradient(rgba(255,102,0,.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,102,0,.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  font-family: 'Courier New', monospace;
+}
+.container h1 {
+  text-align: center; color: #ff6600; margin-bottom: 30px;
+  font-size: 3rem; font-weight: bold; text-transform: uppercase;
+  text-shadow: 3px 3px 0 #000, 0 0 20px rgba(255,102,0,.5);
+  letter-spacing: 3px;
+}
+.content {
+  flex: 1; background: #000; border: 3px solid #ff6600;
+  border-radius: 10px; box-shadow: 0 0 30px rgba(255,102,0,.3);
+  padding: 20px; margin-bottom: 20px;
+}
+
+/* ── Table ── */
+.table { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; }
+.table th {
+  background: #ff6600; color: #000; padding: 15px 12px; text-align: center;
+  border: 2px solid #ff8800; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+}
+.table td {
+  padding: 12px; border: 1px solid #ff6600; background: #000;
+  color: #ff8800; text-align: center; font-weight: bold;
+}
+.rankCell { background: #ff6600; color: #000; font-weight: bold; font-size: 1.1rem; width: 60px; }
+.table tr:nth-child(1) .rankCell { background: #ffd700; text-shadow: 1px 1px 0 #cc9900; }
+.table tr:nth-child(2) .rankCell { background: #c0c0c0; text-shadow: 1px 1px 0 #808080; }
+.table tr:nth-child(3) .rankCell { background: #cd7f32; text-shadow: 1px 1px 0 #8b4513; }
+.initialsCell { font-weight: bold; width: 80px; }
+.scoreCell { width: 80px; text-align: right; }
+.dateCell { width: 120px; font-size: .9rem; color: #ff8800; }
+
+/* ── States ── */
+.loadingSpinner { display: flex; flex-direction: column; align-items: center; padding: 40px; color: #ff6600; }
+.spinner {
+  width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid #ff6600;
+  border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px;
+}
+@keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+.error { text-align: center; padding: 40px; color: #ff6600; }
+.error button {
+  margin-top: 16px; padding: 10px 20px; background: #ff6600; color: #000;
+  border: 2px solid #ff8800; border-radius: 5px; font-weight: bold;
+  font-family: 'Courier New', monospace; cursor: pointer; text-transform: uppercase;
+}
+.empty { text-align: center; padding: 40px; color: #ff8800; font-style: italic; font-size: 1.2rem; }
+
+/* ── Nav ── */
+.navButtons { display: flex; justify-content: center; gap: 20px; }
+.navButtons button {
+  padding: 15px 30px; border: 3px solid #ff6600; border-radius: 10px;
+  background: #000; color: #ff6600; font-family: 'Courier New', monospace;
+  font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+  transition: all .3s; font-size: 1.1rem; cursor: pointer;
+}
+.navButtons button:hover { background: #ff6600; color: #000; transform: scale(1.05); box-shadow: 0 0 20px rgba(255,102,0,.5); }
+
+@media (max-width:576px) {
+  .container { padding: 10px; }
+  .container h1 { font-size: 2rem; }
+  .table th, .table td { padding: 8px; font-size: .9rem; }
+  .rankCell { width: 50px; }
+  .dateCol { display: none; }
+  .navButtons { flex-direction: column; gap: 10px; }
+  .navButtons button { width: 100%; padding: 12px 20px; }
+}

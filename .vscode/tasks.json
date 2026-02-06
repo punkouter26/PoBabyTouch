@@ -2,6 +2,32 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "kill-dotnet",
+            "command": "taskkill",
+            "type": "process",
+            "args": [
+                "/IM",
+                "dotnet.exe",
+                "/F"
+            ],
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "start-azurite",
+            "type": "shell",
+            "command": "docker compose down azurite 2>$null; docker compose up -d azurite",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent"
+            }
+        },
+        {
             "label": "build",
             "command": "dotnet",
             "type": "process",
@@ -11,7 +37,78 @@
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "pre-launch",
+            "dependsOn": [
+                "kill-dotnet",
+                "start-azurite"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "build-for-launch",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/PoBabyTouchGc.sln",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile",
+            "dependsOn": "pre-launch"
+        },
+        {
+            "label": "run-api",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/src/PoBabyTouchGc.Api/PoBabyTouchGc.Api.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "dev"
+            }
+        },
+        {
+            "label": "run-client",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "dev"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/src/client"
+            },
+            "problemMatcher": [],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "dev"
+            }
+        },
+        {
+            "label": "run-all",
+            "dependsOn": [
+                "run-api",
+                "run-client"
+            ],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
         },
         {
             "label": "publish",

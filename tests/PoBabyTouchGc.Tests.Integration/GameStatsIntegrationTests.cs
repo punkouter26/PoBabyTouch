@@ -1,33 +1,36 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using PoBabyTouchGc.Web.Features.Statistics;
+using PoBabyTouchGc.Api.Features.Statistics;
 using System.Net.Http.Json;
 using Xunit;
 using Azure.Data.Tables;
-using PoBabyTouchGc.Shared.Models;
+using PoBabyTouchGc.Api.Models;
 
 namespace PoBabyTouchGc.Tests.Integration;
 
 /// <summary>
 /// Integration tests for game statistics functionality
-/// Tests the complete flow from API to Azure Table Storage
+/// Tests the complete flow from API to Azure Table Storage (Azurite via Testcontainers)
 /// Addresses Priority 5: Test Coverage Gaps
 /// </summary>
-public class GameStatsIntegrationTests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
+[Collection(AzuriteCollection.Name)]
+public class GameStatsIntegrationTests : IAsyncLifetime
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly AzuriteWebApplicationFactory _factory;
     private readonly HttpClient _client;
     private readonly List<string> _testInitials = new();
 
-    public GameStatsIntegrationTests(WebApplicationFactory<Program> factory)
+    public GameStatsIntegrationTests(AzuriteWebApplicationFactory factory)
     {
         _factory = factory;
         _client = _factory.CreateClient();
     }
 
-    public void Dispose()
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public async Task DisposeAsync()
     {
-        CleanupTestData().Wait();
+        await CleanupTestData();
     }
 
     private async Task CleanupTestData()

@@ -23,9 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\PoBabyTouchGc.Web\PoBabyTouchGc.Web.csproj" />
-    <ProjectReference Include="..\..\src\PoBabyTouchGc.Client\PoBabyTouchGc.Client.csproj" />
-    <ProjectReference Include="..\..\src\PoBabyTouchGc.Shared\PoBabyTouchGc.Shared.csproj" />
+    <ProjectReference Include="..\..\src\PoBabyTouchGc.Api\PoBabyTouchGc.Api.csproj" />
   </ItemGroup>
 
 </Project>
