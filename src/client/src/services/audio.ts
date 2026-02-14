@@ -44,31 +44,30 @@ const colorSounds: Record<string, string[]> = {
   ],
 };
 
-export function playSound(type: string) {
+function playAudio(src: string) {
   if (isMuted) return;
   try {
-    const src = soundMap[type.toLowerCase()] ?? soundMap.tap;
     const audio = new Audio(src);
     audio.volume = volume;
     audio.play().catch(() => { /* silent fail */ });
   } catch { /* silent fail */ }
 }
 
+export function playSound(type: string) {
+  const src = soundMap[type.toLowerCase()] ?? soundMap.tap;
+  playAudio(src);
+}
+
 export function playColorSound(color: string) {
-  if (isMuted) return;
-  try {
-    const sounds = colorSounds[color.toLowerCase()];
-    if (!sounds || sounds.length === 0) {
-      playSound('tap'); // fallback to default sound
-      return;
-    }
-    // Pick a random sound from the color's sound array
-    const randomIndex = Math.floor(Math.random() * sounds.length);
-    const src = sounds[randomIndex];
-    const audio = new Audio(src);
-    audio.volume = volume;
-    audio.play().catch(() => { /* silent fail */ });
-  } catch { /* silent fail */ }
+  const sounds = colorSounds[color.toLowerCase()];
+  if (!sounds || sounds.length === 0) {
+    playSound('tap'); // fallback to default sound
+    return;
+  }
+  // Pick a random sound from the color's sound array
+  const randomIndex = Math.floor(Math.random() * sounds.length);
+  const src = sounds[randomIndex];
+  playAudio(src);
 }
 
 export function setVolume(v: number) {
