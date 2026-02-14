@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { GameCircle } from '../types';
 import { standardEngine, babyEngine, type PhysicsEngine } from '../services/physics';
-import { playSound, playColorSound, vibrate } from '../services/audio';
+import { playColorSound, vibrate } from '../services/audio';
 import { submitScore, recordGameSession } from '../services/apiClient';
 import { saveLocalHighScore, storeInitials, recordLocalGameSession } from '../services/localStorage';
 import styles from './Game.module.css';
