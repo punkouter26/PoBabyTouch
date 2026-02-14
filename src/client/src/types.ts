@@ -56,6 +56,6 @@ export interface GameCircle {
   velocityY: number;
   isVisible: boolean;
   isHit: boolean;
-  person: string;
-  personClass: string;
+  color: string;
+  colorClass: string;
 }

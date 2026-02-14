@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { GameCircle } from '../types';
 import { standardEngine, babyEngine, type PhysicsEngine } from '../services/physics';
-import { playSound, vibrate } from '../services/audio';
+import { playColorSound, vibrate } from '../services/audio';
 import { submitScore, recordGameSession } from '../services/apiClient';
 import { saveLocalHighScore, storeInitials, recordLocalGameSession } from '../services/localStorage';
 import styles from './Game.module.css';
@@ -13,11 +13,11 @@ const CIRCLE_RADIUS_PERCENT = 5;
 const CIRCLE_REAPPEAR_DELAY_MS = 800;
 const BASE_SPEED = 0.5;
 const GAME_DURATION_SECONDS = 5;
-const PERSON_TYPES = ['matt', 'nick', 'kim'] as const;
+const CIRCLE_COLORS = ['blue', 'green', 'red', 'purple'] as const;
 
 /* ── Helper: build one circle ─────────────────────────────── */
 function createCircle(id: number, w: number, h: number, radius: number): GameCircle {
-  const person = PERSON_TYPES[Math.floor(Math.random() * PERSON_TYPES.length)];
+  const color = CIRCLE_COLORS[Math.floor(Math.random() * CIRCLE_COLORS.length)];
   return {
     id,
     x: Math.random() * (w - 2 * radius) + radius,
@@ -27,8 +27,8 @@ function createCircle(id: number, w: number, h: number, radius: number): GameCir
     velocityY: (Math.random() * 2 - 1) * BASE_SPEED,
     isVisible: true,
     isHit: false,
-    person,
-    personClass: person,
+    color,
+    colorClass: color,
   };
 }
 
@@ -168,7 +168,7 @@ export default function Game() {
 
     setCircles([...circlesRef.current]);
 
-    playSound(circle.person);
+    playColorSound(circle.color);
     vibrate(50);
 
     // Respawn after delay
@@ -271,7 +271,7 @@ export default function Game() {
             key={c.id}
             className={[
               styles.gameCircle,
-              styles[`${c.personClass}Circle`],
+              styles[`${c.colorClass}Circle`],
               c.isVisible ? styles.appear : styles.disappear,
               c.isHit ? styles.hitEffect : '',
             ]
