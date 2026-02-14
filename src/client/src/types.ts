@@ -58,4 +58,5 @@ export interface GameCircle {
   isHit: boolean;
   person: string;
   personClass: string;
+  color: string;
 }
