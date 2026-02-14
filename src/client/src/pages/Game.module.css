@@ -36,6 +36,10 @@
   cursor: pointer; border: 2px solid #ff6600;
   box-shadow: 0 0 15px rgba(255,102,0,.5);
 }
+.blueCircle   { background: radial-gradient(circle at 30% 30%, #6bb6ff, #0066cc); border-color: #0066cc; box-shadow: 0 0 15px rgba(0,102,204,.5); }
+.greenCircle  { background: radial-gradient(circle at 30% 30%, #66ff66, #00cc00); border-color: #00cc00; box-shadow: 0 0 15px rgba(0,204,0,.5); }
+.redCircle    { background: radial-gradient(circle at 30% 30%, #ff6666, #cc0000); border-color: #cc0000; box-shadow: 0 0 15px rgba(204,0,0,.5); }
+.purpleCircle { background: radial-gradient(circle at 30% 30%, #cc66ff, #8800cc); border-color: #8800cc; box-shadow: 0 0 15px rgba(136,0,204,.5); }
 .mattCircle  { background: radial-gradient(circle at 30% 30%, #ffaa44, #ff6600); }
 .nickCircle  { background: radial-gradient(circle at 30% 30%, #ffbb55, #ff8800); }
 .kimCircle   { background: radial-gradient(circle at 30% 30%, #ffcc66, #ffaa00); }

@@ -16,10 +16,55 @@ const soundMap: Record<string, string> = {
   nick: '/sounds/nick/Recording.m4a',
 };
 
+// Color sound mappings - each color has 4 random sounds
+const colorSounds: Record<string, string[]> = {
+  blue: [
+    '/sounds/blue/sound1.mp3',
+    '/sounds/blue/sound2.mp3',
+    '/sounds/blue/sound3.mp3',
+    '/sounds/blue/sound4.mp3',
+  ],
+  green: [
+    '/sounds/green/sound1.mp3',
+    '/sounds/green/sound2.mp3',
+    '/sounds/green/sound3.mp3',
+    '/sounds/green/sound4.mp3',
+  ],
+  red: [
+    '/sounds/red/sound1.mp3',
+    '/sounds/red/sound2.mp3',
+    '/sounds/red/sound3.mp3',
+    '/sounds/red/sound4.mp3',
+  ],
+  purple: [
+    '/sounds/purple/sound1.mp3',
+    '/sounds/purple/sound2.mp3',
+    '/sounds/purple/sound3.mp3',
+    '/sounds/purple/sound4.mp3',
+  ],
+};
+
 export function playSound(type: string) {
   if (isMuted) return;
   try {
     const src = soundMap[type.toLowerCase()] ?? soundMap.tap;
+    const audio = new Audio(src);
+    audio.volume = volume;
+    audio.play().catch(() => { /* silent fail */ });
+  } catch { /* silent fail */ }
+}
+
+export function playColorSound(color: string) {
+  if (isMuted) return;
+  try {
+    const sounds = colorSounds[color.toLowerCase()];
+    if (!sounds || sounds.length === 0) {
+      playSound('tap'); // fallback to default sound
+      return;
+    }
+    // Pick a random sound from the color's sound array
+    const randomIndex = Math.floor(Math.random() * sounds.length);
+    const src = sounds[randomIndex];
     const audio = new Audio(src);
     audio.volume = volume;
     audio.play().catch(() => { /* silent fail */ });
